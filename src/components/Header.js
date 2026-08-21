@@ -1,0 +1,444 @@
+import React, { useState, useRef, useEffect } from "react";
+
+function Header() {
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const [selectedLocation, setSelectedLocation] = useState(
+    "Mumbai, Maharashtra"
+  );
+
+  const locationRef = useRef(null);
+  const profileRef = useRef(null);
+
+  const locations = [
+    "Mumbai, Maharashtra",
+    "Delhi, Delhi",
+    "Bangalore, Karnataka",
+    "Hyderabad, Telangana",
+    "Chennai, Tamil Nadu",
+    "Pune, Maharashtra",
+    "Kolkata, West Bengal",
+    "Noida, Uttar Pradesh",
+  ];
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        locationRef.current &&
+        !locationRef.current.contains(event.target)
+      ) {
+        setLocationOpen(false);
+      }
+
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
+      ) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
+  const selectLocation = (location) => {
+    setSelectedLocation(location);
+    setLocationOpen(false);
+  };
+
+  const toggleLocation = () => {
+    setLocationOpen(!locationOpen);
+    setProfileOpen(false);
+  };
+
+  const toggleProfile = () => {
+    setProfileOpen(!profileOpen);
+    setLocationOpen(false);
+  };
+
+  return React.createElement(
+    "header",
+    { className: "header" },
+
+    /* =========================
+       LOGO
+    ========================= */
+
+    React.createElement(
+      "div",
+      { className: "header-logo" },
+
+      React.createElement(
+        "div",
+        { className: "logo-box" },
+        "L"
+      ),
+
+      React.createElement(
+        "span",
+        { className: "logo-name" },
+        "Listo"
+      )
+    ),
+
+    /* =========================
+       LOCATION
+    ========================= */
+
+    React.createElement(
+      "div",
+      {
+        className: "location-wrapper",
+        ref: locationRef,
+      },
+
+      React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "location-button",
+          onClick: toggleLocation,
+        },
+
+        React.createElement("i", {
+          className:
+            "fa-solid fa-location-dot location-icon",
+        }),
+
+        React.createElement(
+          "span",
+          { className: "location-text" },
+          selectedLocation
+        ),
+
+        React.createElement("i", {
+          className: `fa-solid ${
+            locationOpen
+              ? "fa-chevron-up"
+              : "fa-chevron-down"
+          } location-chevron`,
+        })
+      ),
+
+      locationOpen &&
+        React.createElement(
+          "div",
+          { className: "location-dropdown" },
+
+          React.createElement(
+            "div",
+            { className: "dropdown-title" },
+            "Select Location"
+          ),
+
+          locations.map((location) =>
+            React.createElement(
+              "button",
+              {
+                key: location,
+                type: "button",
+                className: `location-option ${
+                  selectedLocation === location
+                    ? "active"
+                    : ""
+                }`,
+                onClick: () => selectLocation(location),
+              },
+
+              React.createElement("i", {
+                className:
+                  "fa-solid fa-location-dot option-icon",
+              }),
+
+              React.createElement(
+                "span",
+                null,
+                location
+              ),
+
+              selectedLocation === location &&
+                React.createElement("i", {
+                  className:
+                    "fa-solid fa-check option-check",
+                })
+            )
+          )
+        )
+    ),
+
+    /* =========================
+       SEARCH
+    ========================= */
+
+    React.createElement(
+      "div",
+      { className: "search-container" },
+
+      React.createElement("input", {
+        type: "text",
+        placeholder:
+          "Find Cars, Mobile Phones, Laptops and more...",
+      }),
+
+      React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "search-button",
+        },
+
+        React.createElement("i", {
+          className:
+            "fa-solid fa-magnifying-glass",
+        })
+      )
+    ),
+
+    /* =========================
+       LOGIN
+    ========================= */
+
+    React.createElement(
+      "a",
+      {
+        href: "#login",
+        className: "header-login",
+      },
+      "Login"
+    ),
+
+    /* =========================
+       SELL
+    ========================= */
+
+    React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "sell-button",
+      },
+
+      React.createElement("i", {
+        className: "fa-solid fa-plus sell-icon",
+      }),
+
+      React.createElement(
+        "span",
+        null,
+        "SELL"
+      )
+    ),
+
+    /* =========================
+       PROFILE
+    ========================= */
+
+    React.createElement(
+      "div",
+      {
+        className: "profile-wrapper",
+        ref: profileRef,
+      },
+
+      React.createElement(
+        "button",
+        {
+          type: "button",
+          className: `profile-button ${
+            profileOpen ? "profile-active" : ""
+          }`,
+          onClick: toggleProfile,
+        },
+
+        React.createElement(
+          "span",
+          { className: "profile-avatar" },
+          "AS"
+        ),
+
+        React.createElement("i", {
+          className: `fa-solid ${
+            profileOpen
+              ? "fa-chevron-up"
+              : "fa-chevron-down"
+          } profile-chevron`,
+        })
+      ),
+
+      /* =========================
+         PROFILE DROPDOWN
+      ========================= */
+
+      profileOpen &&
+        React.createElement(
+          "div",
+          { className: "profile-dropdown" },
+
+          /* Profile Header */
+
+          React.createElement(
+            "div",
+            { className: "profile-dropdown-header" },
+
+            React.createElement(
+              "div",
+              { className: "profile-dropdown-avatar" },
+              "AS"
+            ),
+
+            React.createElement(
+              "div",
+              { className: "profile-info" },
+
+              React.createElement(
+                "strong",
+                null,
+                "Ankit Sharma"
+              ),
+
+              React.createElement(
+                "span",
+                null,
+                "View and edit profile"
+              )
+            )
+          ),
+
+          /* Divider */
+
+          React.createElement(
+            "div",
+            { className: "profile-divider" }
+          ),
+
+          /* Menu */
+
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "profile-menu-item",
+            },
+
+            React.createElement("i", {
+              className: "fa-regular fa-user",
+            }),
+
+            React.createElement(
+              "span",
+              null,
+              "My Profile"
+            )
+          ),
+
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "profile-menu-item",
+            },
+
+            React.createElement("i", {
+              className: "fa-solid fa-box",
+            }),
+
+            React.createElement(
+              "span",
+              null,
+              "My Listings"
+            )
+          ),
+
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "profile-menu-item",
+            },
+
+            React.createElement("i", {
+              className: "fa-regular fa-heart",
+            }),
+
+            React.createElement(
+              "span",
+              null,
+              "Favorites"
+            )
+          ),
+
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "profile-menu-item",
+            },
+
+            React.createElement("i", {
+              className: "fa-regular fa-message",
+            }),
+
+            React.createElement(
+              "span",
+              null,
+              "Messages"
+            )
+          ),
+
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "profile-menu-item",
+            },
+
+            React.createElement("i", {
+              className: "fa-solid fa-gear",
+            }),
+
+            React.createElement(
+              "span",
+              null,
+              "Settings"
+            )
+          ),
+
+          /* Divider */
+
+          React.createElement(
+            "div",
+            { className: "profile-divider" }
+          ),
+
+          /* Logout */
+
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className:
+                "profile-menu-item logout-item",
+            },
+
+            React.createElement("i", {
+              className:
+                "fa-solid fa-arrow-right-from-bracket",
+            }),
+
+            React.createElement(
+              "span",
+              null,
+              "Logout"
+            )
+          )
+        )
+    )
+  );
+}
+
+export default Header;

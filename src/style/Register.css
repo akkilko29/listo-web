@@ -1,0 +1,267 @@
+.register-page {
+  width: 100%;
+  min-height: calc(100vh - 220px);
+  background: #f3f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 48px 20px;
+}
+
+.register-card {
+  width: 460px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 32px 32px 28px;
+  box-shadow: 0 8px 20px rgba(0, 47, 52, 0.1);
+}
+
+.register-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 10px;
+  background: #002f34;
+  color: #00a49f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.register-card h1 {
+  margin: 0;
+  color: #002f34;
+  text-align: center;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 800;
+}
+
+.register-subtitle {
+  margin: 8px 0 20px;
+  color: #718385;
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.register-form-group {
+  margin-bottom: 12px;
+}
+
+.register-form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #002f34;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.register-required {
+  color: #d94b4b;
+}
+
+.register-form-group input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #dce3e3;
+  border-radius: 6px;
+  outline: none;
+  background: #f3f5f5;
+  color: #002f34;
+  font-size: 15px;
+}
+
+.register-form-group input::placeholder {
+  color: #8a9899;
+}
+
+.register-form-group input:focus {
+  border-color: #00a49f;
+  box-shadow: 0 0 0 2px rgba(0, 164, 159, 0.1);
+}
+
+.register-password-container {
+  position: relative;
+}
+
+.register-password-container input {
+  padding-right: 40px;
+}
+
+.register-password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #687b7d;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.password-strength {
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.strength-header {
+  display: flex;
+  justify-content: space-between;
+  color: #718385;
+  font-size: 12px;
+}
+
+.strength-status {
+  color: #37a956;
+  font-weight: 700;
+}
+
+.strength-bars {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.strength-bars span {
+  flex: 1;
+  height: 4px;
+  background: #dce3e3;
+  border-radius: 2px;
+}
+
+.strength-bars .strength-active {
+  background: #35ae52;
+}
+
+.terms-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.terms-container input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid #00a49f;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.terms-container input:checked + .custom-checkbox {
+  background: #00a49f;
+}
+
+.terms-text {
+  color: #718385;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.terms-text a {
+  color: #002f34;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.create-account-button {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 6px;
+  background: #002f34;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.create-account-button:hover {
+  background: #00464c;
+}
+
+.register-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.register-divider span {
+  flex: 1;
+  height: 1px;
+  background: #e4e9e9;
+}
+
+.register-divider p {
+  margin: 0;
+  color: #718385;
+  font-size: 13px;
+}
+
+.register-google-button {
+  width: 100%;
+  height: 48px;
+  border: 1px solid #dce3e3;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #002f34;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.register-google-button:hover {
+  background: #f8fafa;
+}
+
+.register-google-icon {
+  color: #4285f4;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.already-account {
+  margin: 18px 0 0;
+  color: #718385;
+  text-align: center;
+  font-size: 14px;
+}
+
+.already-account a {
+  color: #00a49f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.already-account a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+  .register-card {
+    width: 100%;
+    max-width: 460px;
+  }
+}

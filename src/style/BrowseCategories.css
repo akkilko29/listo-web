@@ -1,0 +1,134 @@
+.browse-categories-section {
+  width: 100%;
+  background: #ffffff;
+  padding: 36px 0 40px;
+}
+
+.home-section-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.home-section-title {
+  margin: 0 0 22px;
+  color: #002f34;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 800;
+}
+
+.browse-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.browse-category-item {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.browse-category-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.browse-category-item:hover .browse-category-icon {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 47, 52, 0.12);
+}
+
+.browse-category-name {
+  color: #002f34;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.browse-category-item.vehicles .browse-category-icon {
+  background: #fff5e6;
+  color: #f39b25;
+}
+
+.browse-category-item.properties .browse-category-icon {
+  background: #eef8ef;
+  color: #42a85f;
+}
+
+.browse-category-item.mobiles .browse-category-icon {
+  background: #e9f9fc;
+  color: #22b5d3;
+}
+
+.browse-category-item.jobs .browse-category-icon {
+  background: #f8eafa;
+  color: #b54cc8;
+}
+
+.browse-category-item.electronics .browse-category-icon {
+  background: #edf0fb;
+  color: #6676c6;
+}
+
+.browse-category-item.furniture .browse-category-icon {
+  background: #f5efeb;
+  color: #8a6d5a;
+}
+
+.browse-category-item.fashion .browse-category-icon {
+  background: #fff0f4;
+  color: #ec6687;
+}
+
+.browse-category-item.pets .browse-category-icon {
+  background: #fff9e8;
+  color: #e9bc35;
+}
+
+@media (max-width: 900px) {
+  .browse-categories-grid {
+    grid-template-columns: repeat(4, 1fr);
+    row-gap: 24px;
+  }
+}
+
+@media (max-width: 500px) {
+  .home-section-container {
+    padding: 0 16px;
+  }
+
+  .browse-categories-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px 10px;
+  }
+
+  .browse-category-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .browse-category-name {
+    font-size: 12px;
+  }
+
+  .home-section-title {
+    font-size: 20px;
+  }
+}
