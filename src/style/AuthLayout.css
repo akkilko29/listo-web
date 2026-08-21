@@ -1,0 +1,17 @@
+.auth-layout {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #f3f5f5;
+}
+
+.auth-content {
+  flex: 1;
+
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+}

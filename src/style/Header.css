@@ -354,6 +354,30 @@
 .logout-item:hover i {
   color: #d44949;
 }
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.header-logo-image {
+  width: 32px;
+  height: 32px;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+.logo-name {
+  color: #002f34;
+
+  font-size: 17px;
+
+  font-weight: 800;
+
+  line-height: 1;
+}
 
 @media (max-width: 1000px) {
   .header {

@@ -112,6 +112,27 @@
   color: #ffffff;
 }
 
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.footer-logo-image {
+  width: 30px;
+  height: 30px;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+.footer-logo span {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 @media (max-width: 800px) {
   .footer-main {
     grid-template-columns: 2fr 1fr 1fr;

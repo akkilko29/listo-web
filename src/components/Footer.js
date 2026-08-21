@@ -1,5 +1,5 @@
 import React from "react";
-
+import logo from "../assets/listo_logo.png";
 function Footer() {
   return React.createElement(
     "footer",
@@ -23,19 +23,19 @@ function Footer() {
           "div",
           { className: "footer-logo" },
 
-          React.createElement(
-            "div",
-            { className: "footer-logo-icon" },
-            "L"
-          ),
+          React.createElement("img", {
+            src: logo,
+            alt: "Listo",
+            className: "footer-logo-image",
+          }),
 
           React.createElement(
             "span",
             null,
             "Listo"
-          )
-        ),
+          )),
 
+        // Rest of footer content...
         React.createElement(
           "p",
           null,

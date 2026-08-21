@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-
+import logo from "../assets/listo_logo.png";
 function Header() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -73,11 +73,11 @@ function Header() {
       "div",
       { className: "header-logo" },
 
-      React.createElement(
-        "div",
-        { className: "logo-box" },
-        "L"
-      ),
+      React.createElement("img", {
+        src: logo,
+        alt: "Listo",
+        className: "header-logo-image",
+      }),
 
       React.createElement(
         "span",
