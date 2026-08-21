@@ -30,7 +30,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: #002f34;
+  color: #0F172A;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -45,7 +45,7 @@
 }
 
 .mega-menu-item:hover {
-  color: #00a49f;
+  color: #2563EB;
 }
 
 .mega-menu-item::after {
@@ -55,7 +55,7 @@
   right: 0;
   bottom: 0;
   height: 3px;
-  background: #00a49f;
+  background: #2563EB;
   transform: scaleX(0);
   transition: transform 0.15s ease;
 }
@@ -66,7 +66,7 @@
 }
 
 .mega-menu-item.active {
-  color: #00a49f;
+  color: #2563EB;
 }
 
 .all-category-arrow {
@@ -86,7 +86,7 @@
   border: 1px solid #dce4e4;
   border-top: none;
   border-radius: 0 0 10px 10px;
-  box-shadow: 0 12px 30px rgba(0, 47, 52, 0.16);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
   display: flex;
   overflow: hidden;
 }
@@ -114,7 +114,7 @@
   padding: 0 18px;
   border: none;
   background: transparent;
-  color: #002f34;
+  color: #0F172A;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -137,19 +137,19 @@
 }
 
 .mega-sidebar-item:hover {
-  background: #eafafa;
-  color: #00a49f;
+  background: #EFF6FF;
+  color: #2563EB;
 }
 
 .mega-sidebar-item.selected {
-  background: #dff5f4;
-  color: #00a49f;
+  background: #DBEAFE;
+  color: #2563EB;
   font-weight: 700;
-  border-right: 3px solid #00a49f;
+  border-right: 3px solid #2563EB;
 }
 
 .mega-sidebar-item.selected i:first-child {
-  color: #00a49f;
+  color: #2563EB;
 }
 
 .mega-content {
@@ -166,7 +166,7 @@
 
 .mega-content-header h3 {
   margin: 0;
-  color: #002f34;
+  color: #0F172A;
   font-size: 22px;
   font-weight: 800;
 }
@@ -180,17 +180,17 @@
 .view-all-button {
   height: 36px;
   padding: 0 14px;
-  border: 1px solid #00a49f;
+  border: 1px solid #2563EB;
   border-radius: 6px;
   background: #ffffff;
-  color: #007f7b;
+  color: #1D4ED8;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .view-all-button:hover {
-  background: #00a49f;
+  background: #2563EB;
   color: #ffffff;
 }
 
@@ -206,7 +206,7 @@
   border: 1px solid #e4eaea;
   border-radius: 6px;
   background: #ffffff;
-  color: #002f34;
+  color: #0F172A;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -222,13 +222,13 @@
 }
 
 .mega-subcategory:hover {
-  background: #f0fbfb;
-  border-color: #00a49f;
-  color: #008d89;
+  background: #EFF6FF;
+  border-color: #2563EB;
+  color: #1D4ED8;
 }
 
 .mega-subcategory:hover i {
-  color: #00a49f;
+  color: #2563EB;
 }
 
 .mega-all-categories {
@@ -236,20 +236,20 @@
   min-height: 140px;
   border: 1px dashed #b9cdce;
   border-radius: 8px;
-  background: #f7fafa;
+  background: #F8FAFC;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 14px;
-  color: #002f34;
+  color: #0F172A;
 }
 
 .mega-all-categories > i {
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: #dff5f4;
-  color: #00a49f;
+  background: #DBEAFE;
+  color: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;

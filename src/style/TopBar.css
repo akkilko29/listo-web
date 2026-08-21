@@ -1,8 +1,8 @@
 .top-bar {
   height: 32px;
   padding: 0 40px;
-  background-color: #002f34;
-  color: #d7eeee;
+  background-color: #0F172A;
+  color: #DBEAFE;
 
   display: flex;
   align-items: center;
@@ -18,7 +18,7 @@
 }
 
 .top-bar-links a {
-  color: #d7eeee;
+  color: #DBEAFE;
   text-decoration: none;
 }
 

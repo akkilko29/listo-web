@@ -15,7 +15,7 @@
   background: #ffffff;
   border-radius: 12px;
   padding: 32px 32px 28px;
-  box-shadow: 0 8px 20px rgba(0, 47, 52, 0.10);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -26,8 +26,8 @@
   height: 44px;
   margin: 0 auto 12px;
   border-radius: 10px;
-  background: #002f34;
-  color: #00a49f;
+  background: #2563EB;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,7 +36,7 @@
 
 .login-card h1 {
   margin: 0;
-  color: #002f34;
+  color: #0F172A;
   text-align: center;
   font-size: 28px;
   line-height: 34px;
@@ -64,7 +64,7 @@
 .form-group label {
   display: block;
   margin-bottom: 6px;
-  color: #002f34;
+  color: #0F172A;
   font-size: 13px;
   font-weight: 700;
 }
@@ -81,7 +81,7 @@
   border-radius: 6px;
   outline: none;
   background: #f3f5f5;
-  color: #002f34;
+  color: #0F172A;
   font-size: 15px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -91,8 +91,8 @@
 }
 
 .form-group input:focus {
-  border-color: #00a49f;
-  box-shadow: 0 0 0 2px rgba(0, 164, 159, 0.10);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
 .password-container {
@@ -125,7 +125,7 @@
 }
 
 .forgot-password {
-  color: #00a49f;
+  color: #2563EB;
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
@@ -141,7 +141,7 @@
   margin-top: 16px;
   border: none;
   border-radius: 6px;
-  background: #002f34;
+  background: #2563EB;
   color: #ffffff;
   font-size: 15px;
   font-weight: 800;
@@ -150,7 +150,7 @@
 }
 
 .login-button:hover {
-  background: #00464c;
+  background: #1D4ED8;
 }
 
 .login-divider {
@@ -179,7 +179,7 @@
   border: 1px solid #dce3e3;
   border-radius: 6px;
   background: #ffffff;
-  color: #002f34;
+  color: #0F172A;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -207,7 +207,7 @@
 }
 
 .register-text a {
-  color: #00a49f;
+  color: #2563EB;
   font-weight: 700;
   text-decoration: none;
 }

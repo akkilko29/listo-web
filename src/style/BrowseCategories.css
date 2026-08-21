@@ -13,7 +13,7 @@
 
 .home-section-title {
   margin: 0 0 22px;
-  color: #002f34;
+  color: #0F172A;
   font-size: 24px;
   line-height: 30px;
   font-weight: 800;
@@ -50,11 +50,11 @@
 
 .browse-category-item:hover .browse-category-icon {
   transform: translateY(-2px);
-  box-shadow: 0 5px 12px rgba(0, 47, 52, 0.12);
+  box-shadow: 0 5px 12px rgba(37, 99, 235, 0.12);
 }
 
 .browse-category-name {
-  color: #002f34;
+  color: #0F172A;
   font-size: 14px;
   line-height: 18px;
   font-weight: 700;

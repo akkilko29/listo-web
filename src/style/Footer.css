@@ -1,6 +1,6 @@
 .footer {
   width: 100%;
-  background: #002f34;
+  background: #0F172A;
   color: #ffffff;
   margin-top: auto;
 }
@@ -31,8 +31,8 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: #00a49f;
-  color: #002f34;
+  background: #2563EB;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,7 +49,7 @@
 
 .footer-brand p {
   margin: 12px 0 0;
-  color: #a8bfc1;
+  color: #94A3B8;
   font-size: 14px;
   line-height: 22px;
   max-width: 360px;
@@ -73,7 +73,7 @@
 }
 
 .footer-column a {
-  color: #a8bfc1;
+  color: #94A3B8;
   font-size: 14px;
   line-height: 20px;
   text-decoration: none;
@@ -87,11 +87,11 @@
 .footer-bottom {
   height: 48px;
   padding: 0 24px;
-  background: #00282d;
+  background: #0B1224;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #789193;
+  color: #94A3B8;
   font-size: 13px;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .footer-social a {
-  color: #789193;
+  color: #94A3B8;
   font-size: 16px;
   text-decoration: none;
   transition: color 0.15s ease;
