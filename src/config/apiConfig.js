@@ -1,26 +1,42 @@
 /**
  * Backend API configuration
  *
- * Change DEFAULT_API_BASE_URL (or VITE_API_BASE_URL in .env)
- * before production deploy.
+ * Local Vite (`npm run dev` / `npm run preview`) calls `/api/...`
+ * on the same origin. vite.config.js proxies that to the backend,
+ * so the browser never makes a cross-origin request (no CORS).
  *
- * Local:  http://localhost:8080
- * Prod:   https://api.yourdomain.com
- *
- * In `npm run dev`, requests use the Vite /api proxy so the
- * browser does not hit CORS errors.
+ * Production builds on a real domain use VITE_API_BASE_URL.
  */
-const DEFAULT_API_BASE_URL = "http://localhost:8080";
+const DEFAULT_API_BASE_URL = "http://127.0.0.1:8080";
 
 export const API_ORIGIN = String(
   import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL
 ).replace(/\/$/, "");
 
-export const API_BASE_URL = import.meta.env.DEV ? "" : API_ORIGIN;
+function isLocalHost(hostname) {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
+export function getApiBaseUrl() {
+  if (import.meta.env.DEV) {
+    return "";
+  }
+
+  if (typeof window !== "undefined" && isLocalHost(window.location.hostname)) {
+    return "";
+  }
+
+  return API_ORIGIN;
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export const API_ENDPOINTS = {
   login: "/api/auth/login",
   register: "/api/auth/register",
+  products: "/api/products",
+  productsSearch: "/api/products/search",
+  productById: (id) => `/api/products/${id}`,
   categories: "/api/categories",
   subcategoriesByCategory: (categoryId) =>
     `/api/subcategories/category/${categoryId}`,

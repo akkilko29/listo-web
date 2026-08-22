@@ -1,90 +1,116 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
+import { getProducts, searchProducts } from "../services/productService";
+import { isWishlisted, toggleWishlist } from "../services/wishlistStorage";
+import { filterProducts, sortProducts } from "../utils/productDisplay";
+import { useAuth } from "../context/AuthContext";
 import "../style/ProductListing.css";
+
+const PAGE_SIZE = 8;
 
 function ProductListing() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const category = searchParams.get("category") || "All Categories";
   const subcategory = searchParams.get("subcategory");
-  const location = searchParams.get("location") || "Mumbai";
+  const categoryId = searchParams.get("categoryId");
+  const subCategoryId = searchParams.get("subCategoryId");
+  const keyword = searchParams.get("keyword") || "";
+  const locationParam = searchParams.get("location") || "";
 
   const [sortBy, setSortBy] = useState("Date Published: Newest");
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [wishlistTick, setWishlistTick] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [filters, setFilters] = useState({
     category: category,
-    minPrice: "",
-    maxPrice: "",
-    location: location,
+    minPrice: searchParams.get("minPrice") || "",
+    maxPrice: searchParams.get("maxPrice") || "",
+    location: locationParam,
     condition: "Any",
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
+  useEffect(() => {
+    setFilters((previous) => ({
+      ...previous,
+      category,
+      location: locationParam,
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+    }));
+  }, [category, locationParam, searchParams]);
 
-  const products = [
-    {
-      id: 101,
-      image:
-        "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&w=500&q=80",
-      price: "₹ 8,45,000",
-      title: "Honda City ZX i-VTEC (2022) • First Owner, First Registration",
-      location: "Bandra, Mumbai",
-      time: "2 hrs ago",
-      featured: true,
-    },
-    {
-      id: 102,
-      image:
-        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=500&q=80",
-      price: "₹ 9,15,000",
-      title: "Hyundai Creta SX Petrol (2022) • 2nd Owner, Automatic",
-      location: "Andheri West, Mumbai",
-      time: "4 hrs ago",
-      featured: false,
-    },
-    {
-      id: 103,
-      image:
-        "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=500&q=80",
-      price: "₹ 4,75,000",
-      title: "Maruti Swift VXI (2020) • Single Owner, Low Run 12K km",
-      location: "Thane West, Thane",
-      time: "5 hrs ago",
-      featured: false,
-    },
-    {
-      id: 104,
-      image:
-        "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=500&q=80",
-      price: "₹ 6,40,000",
-      title: "Honda Civic 1.8 VTi • Pune Tech International",
-      location: "Powai, Mumbai",
-      time: "Today",
-      featured: false,
-    },
-    {
-      id: 105,
-      image:
-        "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=500&q=80",
-      price: "₹ 2,90,000",
-      title: "Tata Tiago XZ Plus (2019) • Reverse Petrol, Automatic",
-      location: "Navi Mumbai",
-      time: "Yesterday",
-      featured: false,
-    },
-    {
-      id: 106,
-      image:
-        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=500&q=80",
-      price: "₹ 9,99,999",
-      title: "Toyota Innova Crysta 2.4 GX Diesel • Spacious 7 Seater",
-      location: "Worli, Mumbai",
-      time: "2 days ago",
-      featured: false,
-    },
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    setCurrentPage(1);
+
+    const loader = keyword ? searchProducts(keyword) : getProducts();
+
+    loader
+      .then((products) => {
+        if (!cancelled) {
+          setAllProducts(products);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || "Unable to load products");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [keyword]);
+
+  const visibleProducts = useMemo(() => {
+    const conditionFilter =
+      filters.condition === "Brand New / Unused"
+        ? "NEW"
+        : filters.condition === "Any"
+          ? ""
+          : "USED";
+
+    const filtered = filterProducts(allProducts, {
+      categoryId,
+      subCategoryId,
+      location: filters.location,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+      condition: conditionFilter,
+    });
+
+    return sortProducts(filtered, sortBy);
+  }, [
+    allProducts,
+    categoryId,
+    subCategoryId,
+    filters.location,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.condition,
+    sortBy,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleProducts.length / PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const pagedProducts = visibleProducts.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
 
   const handleFilterChange = (name, value) => {
     setFilters((previous) => ({
@@ -94,95 +120,74 @@ function ProductListing() {
   };
 
   const applyFilters = () => {
-    const params = new URLSearchParams();
-
-    if (filters.category) {
-      params.set("category", filters.category);
-    }
+    const params = new URLSearchParams(searchParams);
 
     if (filters.location) {
       params.set("location", filters.location);
+    } else {
+      params.delete("location");
     }
 
     if (filters.minPrice) {
       params.set("minPrice", filters.minPrice);
+    } else {
+      params.delete("minPrice");
     }
 
     if (filters.maxPrice) {
       params.set("maxPrice", filters.maxPrice);
+    } else {
+      params.delete("maxPrice");
     }
 
     navigate(`/listings?${params.toString()}`);
-
     setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setFilters({
-      category: "Cars & Vehicles",
+      category: "All Categories",
       minPrice: "",
       maxPrice: "",
-      location: "Mumbai",
+      location: "",
       condition: "Any",
     });
-
-    navigate("/listings?category=Cars%20%26%20Vehicles&location=Mumbai");
-
+    navigate("/listings");
     setCurrentPage(1);
   };
 
-  const handleProductClick = (id) => {
-    navigate(`/product/${id}`);
+  const handleHeartClick = (event, productId) => {
+    event.stopPropagation();
+
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    toggleWishlist(productId);
+    setWishlistTick((value) => value + 1);
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  const heading = keyword
+    ? `Results for "${keyword}"`
+    : subcategory || `${category}${filters.location ? ` in ${filters.location}` : ""}`;
 
   return React.createElement(
     "div",
     { className: "product-listing-page" },
 
-    /* =========================
-       BREADCRUMB
-    ========================= */
-
     React.createElement(
       "div",
       { className: "listing-breadcrumb" },
 
-      React.createElement("span", null, "Home"),
+      React.createElement("span", { onClick: () => navigate("/"), style: { cursor: "pointer" } }, "Home"),
 
       React.createElement("i", {
         className: "fa-solid fa-chevron-right",
       }),
 
-      React.createElement("span", null, category),
-
-      subcategory &&
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement("i", {
-            className: "fa-solid fa-chevron-right",
-          }),
-          React.createElement("strong", null, subcategory)
-        ),
-
-      !subcategory &&
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement("i", {
-            className: "fa-solid fa-chevron-right",
-          }),
-          React.createElement("strong", null, `${category} in ${location}`)
-        )
+      React.createElement("strong", null, heading)
     ),
-
-    /* =========================
-       ACTIVE FILTERS
-    ========================= */
 
     React.createElement(
       "div",
@@ -195,93 +200,55 @@ function ProductListing() {
         React.createElement(
           "span",
           { className: "active-filter-label" },
-          "Active Filters:"
+          `${visibleProducts.length} listings`
         ),
 
-        React.createElement(
-          "span",
-          { className: "filter-chip" },
-          "Budget: Under ₹10L",
-          React.createElement("i", {
-            className: "fa-solid fa-xmark",
-          })
-        ),
+        keyword &&
+          React.createElement(
+            "span",
+            { className: "filter-chip" },
+            `Search: ${keyword}`
+          ),
 
-        React.createElement(
-          "span",
-          { className: "filter-chip" },
-          "Location: Mumbai",
-          React.createElement("i", {
-            className: "fa-solid fa-xmark",
-          })
-        ),
+        categoryId &&
+          React.createElement(
+            "span",
+            { className: "filter-chip" },
+            category
+          ),
 
-        React.createElement(
-          "span",
-          { className: "filter-chip" },
-          "Condition: Gently Used",
-          React.createElement("i", {
-            className: "fa-solid fa-xmark",
-          })
-        )
+        filters.location &&
+          React.createElement(
+            "span",
+            { className: "filter-chip" },
+            `Location: ${filters.location}`
+          )
       ),
 
       React.createElement(
         "div",
         { className: "sort-wrapper" },
 
-        React.createElement(
-          "span",
-          null,
-          "Sort by:"
-        ),
+        React.createElement("span", null, "Sort by:"),
 
         React.createElement(
           "select",
           {
             value: sortBy,
-            onChange: (event) =>
-              setSortBy(event.target.value),
+            onChange: (event) => setSortBy(event.target.value),
           },
 
-          React.createElement(
-            "option",
-            null,
-            "Date Published: Newest"
-          ),
-
-          React.createElement(
-            "option",
-            null,
-            "Date Published: Oldest"
-          ),
-
-          React.createElement(
-            "option",
-            null,
-            "Price: Low to High"
-          ),
-
-          React.createElement(
-            "option",
-            null,
-            "Price: High to Low"
-          )
+          React.createElement("option", null, "Date Published: Newest"),
+          React.createElement("option", null, "Date Published: Oldest"),
+          React.createElement("option", null, "Price: Low to High"),
+          React.createElement("option", null, "Price: High to Low")
         )
       )
     ),
 
-    /* =========================
-       CONTENT
-    ========================= */
-
     React.createElement(
       "div",
       { className: "listing-content" },
-
-      /* =========================
-         FILTER SIDEBAR
-      ========================= */
 
       React.createElement(
         "aside",
@@ -291,11 +258,7 @@ function ProductListing() {
           "div",
           { className: "filter-header" },
 
-          React.createElement(
-            "h2",
-            null,
-            "Filters"
-          ),
+          React.createElement("h2", null, "Filters"),
 
           React.createElement(
             "button",
@@ -307,72 +270,11 @@ function ProductListing() {
           )
         ),
 
-        /* Category */
-
         React.createElement(
           "div",
           { className: "filter-group" },
 
-          React.createElement(
-            "label",
-            null,
-            "CATEGORY"
-          ),
-
-          React.createElement(
-            "select",
-            {
-              value: filters.category,
-              onChange: (event) =>
-                handleFilterChange(
-                  "category",
-                  event.target.value
-                ),
-            },
-
-            React.createElement(
-              "option",
-              null,
-              "Cars & Vehicles"
-            ),
-
-            React.createElement(
-              "option",
-              null,
-              "Cars"
-            ),
-
-            React.createElement(
-              "option",
-              null,
-              "SUVs"
-            ),
-
-            React.createElement(
-              "option",
-              null,
-              "Sedans"
-            ),
-
-            React.createElement(
-              "option",
-              null,
-              "Hatchbacks"
-            )
-          )
-        ),
-
-        /* Price */
-
-        React.createElement(
-          "div",
-          { className: "filter-group" },
-
-          React.createElement(
-            "label",
-            null,
-            "BUDGET (PRICE RANGE)"
-          ),
+          React.createElement("label", null, "BUDGET (PRICE RANGE)"),
 
           React.createElement(
             "div",
@@ -381,60 +283,36 @@ function ProductListing() {
             React.createElement(
               "div",
               null,
-
-              React.createElement(
-                "small",
-                null,
-                "Min (₹)"
-              ),
-
+              React.createElement("small", null, "Min (₹)"),
               React.createElement("input", {
                 type: "number",
                 placeholder: "10,000",
                 value: filters.minPrice,
                 onChange: (event) =>
-                  handleFilterChange(
-                    "minPrice",
-                    event.target.value
-                  ),
+                  handleFilterChange("minPrice", event.target.value),
               })
             ),
 
             React.createElement(
               "div",
               null,
-
-              React.createElement(
-                "small",
-                null,
-                "Max (₹)"
-              ),
-
+              React.createElement("small", null, "Max (₹)"),
               React.createElement("input", {
                 type: "number",
                 placeholder: "10,00,000",
                 value: filters.maxPrice,
                 onChange: (event) =>
-                  handleFilterChange(
-                    "maxPrice",
-                    event.target.value
-                  ),
+                  handleFilterChange("maxPrice", event.target.value),
               })
             )
           )
         ),
 
-        /* Location */
-
         React.createElement(
           "div",
           { className: "filter-group" },
 
-          React.createElement(
-            "label",
-            null,
-            "LOCATION"
-          ),
+          React.createElement("label", null, "LOCATION"),
 
           React.createElement(
             "div",
@@ -442,12 +320,10 @@ function ProductListing() {
 
             React.createElement("input", {
               type: "text",
+              placeholder: "City or state",
               value: filters.location,
               onChange: (event) =>
-                handleFilterChange(
-                  "location",
-                  event.target.value
-                ),
+                handleFilterChange("location", event.target.value),
             }),
 
             React.createElement("i", {
@@ -456,86 +332,26 @@ function ProductListing() {
           )
         ),
 
-        /* Condition */
-
         React.createElement(
           "div",
           { className: "filter-group condition-group" },
 
-          React.createElement(
-            "label",
-            null,
-            "VEHICLE CONDITION"
-          ),
+          React.createElement("label", null, "CONDITION"),
 
-          React.createElement(
-            "label",
-            { className: "radio-option" },
-
-            React.createElement("input", {
-              type: "radio",
-              name: "condition",
-              checked:
-                filters.condition === "Gently Used",
-              onChange: () =>
-                handleFilterChange(
-                  "condition",
-                  "Gently Used"
-                ),
-            }),
-
+          ["Any", "Brand New / Unused", "Gently Used"].map((option) =>
             React.createElement(
-              "span",
-              null,
-              "Gently Used"
-            )
-          ),
-
-          React.createElement(
-            "label",
-            { className: "radio-option" },
-
-            React.createElement("input", {
-              type: "radio",
-              name: "condition",
-              checked:
-                filters.condition ===
-                "Brand New / Unused",
-              onChange: () =>
-                handleFilterChange(
-                  "condition",
-                  "Brand New / Unused"
-                ),
-            }),
-
-            React.createElement(
-              "span",
-              null,
-              "Brand New / Unused"
-            )
-          ),
-
-          React.createElement(
-            "label",
-            { className: "radio-option" },
-
-            React.createElement("input", {
-              type: "radio",
-              name: "condition",
-              checked:
-                filters.condition ===
-                "Needs minor work",
-              onChange: () =>
-                handleFilterChange(
-                  "condition",
-                  "Needs minor work"
-                ),
-            }),
-
-            React.createElement(
-              "span",
-              null,
-              "Needs minor work"
+              "label",
+              {
+                key: option,
+                className: "radio-option",
+              },
+              React.createElement("input", {
+                type: "radio",
+                name: "condition",
+                checked: filters.condition === option,
+                onChange: () => handleFilterChange("condition", option),
+              }),
+              React.createElement("span", null, option)
             )
           )
         ),
@@ -551,148 +367,157 @@ function ProductListing() {
         )
       ),
 
-      /* =========================
-         PRODUCTS
-      ========================= */
-
       React.createElement(
         "main",
         { className: "listing-results" },
 
-        React.createElement(
-          "div",
-          { className: "results-grid" },
+        loading &&
+          React.createElement("p", { className: "listings-status" }, "Loading products..."),
 
-          products.map((product) =>
-            React.createElement(
-              "article",
-              {
-                key: product.id,
-                className: "listing-card",
-                onClick: () =>
-                  handleProductClick(product.id),
-              },
+        error &&
+          React.createElement("p", { className: "listings-status listings-error" }, error),
 
+        !loading && !error && pagedProducts.length === 0 &&
+          React.createElement(
+            "p",
+            { className: "listings-status" },
+            "No products found."
+          ),
+
+        !loading && !error && pagedProducts.length > 0 &&
+          React.createElement(
+            "div",
+            { className: "results-grid" },
+
+            pagedProducts.map((product) =>
               React.createElement(
-                "div",
-                { className: "listing-image-wrapper" },
+                "article",
+                {
+                  key: `${product.id}-${wishlistTick}`,
+                  className: "listing-card",
+                  onClick: () => navigate(`/product/${product.id}`),
+                },
 
-                React.createElement("img", {
-                  src: product.image,
-                  alt: product.title,
-                }),
+                React.createElement(
+                  "div",
+                  { className: "listing-image-wrapper" },
 
-                product.featured &&
+                  product.image
+                    ? React.createElement("img", {
+                        src: product.image,
+                        alt: product.title,
+                      })
+                    : React.createElement(
+                        "div",
+                        { className: "listing-image-empty" },
+                        React.createElement("i", { className: "fa-regular fa-image" })
+                      ),
+
+                  product.featured &&
+                    React.createElement(
+                      "span",
+                      { className: "listing-featured" },
+                      "FEATURED"
+                    ),
+
+                  product.sold &&
+                    React.createElement(
+                      "span",
+                      { className: "listing-sold" },
+                      "SOLD"
+                    ),
+
                   React.createElement(
-                    "span",
-                    { className: "listing-featured" },
-                    "FEATURED"
-                  ),
-
-                React.createElement("button", {
-                  type: "button",
-                  className: "listing-heart",
-                  onClick: (event) => {
-                    event.stopPropagation();
-                  },
-                }, React.createElement("i", {
-                  className: "fa-regular fa-heart",
-                }))
-              ),
-
-              React.createElement(
-                "div",
-                { className: "listing-card-content" },
-
-                React.createElement(
-                  "strong",
-                  { className: "listing-price" },
-                  product.price
-                ),
-
-                React.createElement(
-                  "h3",
-                  null,
-                  product.title
+                    "button",
+                    {
+                      type: "button",
+                      className: `listing-heart ${
+                        isWishlisted(product.id) ? "active" : ""
+                      }`,
+                      onClick: (event) => handleHeartClick(event, product.id),
+                    },
+                    React.createElement("i", {
+                      className: isWishlisted(product.id)
+                        ? "fa-solid fa-heart"
+                        : "fa-regular fa-heart",
+                    })
+                  )
                 ),
 
                 React.createElement(
                   "div",
-                  { className: "listing-meta" },
+                  { className: "listing-card-content" },
 
                   React.createElement(
-                    "span",
-                    null,
-
-                    React.createElement("i", {
-                      className:
-                        "fa-solid fa-location-dot",
-                    }),
-
-                    product.location
+                    "strong",
+                    { className: "listing-price" },
+                    product.price
                   ),
 
+                  React.createElement("h3", null, product.title),
+
                   React.createElement(
-                    "span",
-                    null,
-                    product.time
+                    "div",
+                    { className: "listing-meta" },
+
+                    React.createElement(
+                      "span",
+                      null,
+                      React.createElement("i", {
+                        className: "fa-solid fa-location-dot",
+                      }),
+                      product.location || "India"
+                    ),
+
+                    React.createElement("span", null, product.time)
                   )
                 )
               )
             )
-          )
-        ),
-
-        /* =========================
-           PAGINATION
-        ========================= */
-
-        React.createElement(
-          "div",
-          { className: "listing-pagination" },
-
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              disabled: currentPage === 1,
-              onClick: () =>
-                handlePageChange(currentPage - 1),
-            },
-            React.createElement("i", {
-              className: "fa-solid fa-chevron-left",
-            })
           ),
 
-          [1, 2, 3].map((page) =>
+        !loading && visibleProducts.length > PAGE_SIZE &&
+          React.createElement(
+            "div",
+            { className: "listing-pagination" },
+
             React.createElement(
               "button",
               {
-                key: page,
                 type: "button",
-                className:
-                  currentPage === page
-                    ? "active"
-                    : "",
-                onClick: () =>
-                  handlePageChange(page),
+                disabled: page === 1,
+                onClick: () => setCurrentPage(page - 1),
               },
-              page
-            )
-          ),
+              React.createElement("i", {
+                className: "fa-solid fa-chevron-left",
+              })
+            ),
 
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              onClick: () =>
-                handlePageChange(currentPage + 1),
-            },
-            React.createElement("i", {
-              className: "fa-solid fa-chevron-right",
-            })
+            Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) =>
+              React.createElement(
+                "button",
+                {
+                  key: pageNumber,
+                  type: "button",
+                  className: page === pageNumber ? "active" : "",
+                  onClick: () => setCurrentPage(pageNumber),
+                },
+                pageNumber
+              )
+            ),
+
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                disabled: page === totalPages,
+                onClick: () => setCurrentPage(page + 1),
+              },
+              React.createElement("i", {
+                className: "fa-solid fa-chevron-right",
+              })
+            )
           )
-        )
       )
     )
   );

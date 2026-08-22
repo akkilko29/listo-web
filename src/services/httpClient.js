@@ -1,5 +1,19 @@
-import { API_BASE_URL } from "../config/apiConfig";
+import { getApiBaseUrl } from "../config/apiConfig";
 import { getStoredToken } from "./authStorage";
+
+const PUBLIC_GET_PREFIXES = [
+  "/api/categories",
+  "/api/subcategories",
+  "/api/products",
+];
+
+function isPublicGet(path, method) {
+  if (String(method || "GET").toUpperCase() !== "GET") {
+    return false;
+  }
+
+  return PUBLIC_GET_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
 
 async function parseError(response, path) {
   let message = `API ${response.status}: ${path}`;
@@ -34,7 +48,7 @@ async function request(path, options = {}) {
   };
 
   const token = getStoredToken();
-  if (token && !headers.Authorization) {
+  if (token && !headers.Authorization && !isPublicGet(path, options.method)) {
     headers.Authorization = `Bearer ${token}`;
   }
 
@@ -45,7 +59,7 @@ async function request(path, options = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     method: options.method || "GET",
     headers,
     body: isFormData

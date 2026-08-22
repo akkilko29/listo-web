@@ -1,278 +1,246 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
+import { useAuth } from "../context/AuthContext";
+import { getProductById, getProducts } from "../services/productService";
+import { startChat } from "../services/chatStorage";
+import { isWishlisted, toggleWishlist } from "../services/wishlistStorage";
 import "../style/ProductDetails.css";
 
 function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const [selectedImage, setSelectedImage] = useState(0);
+  const [product, setProduct] = useState(null);
+  const [similarProducts, setSimilarProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [wishlistTick, setWishlistTick] = useState(0);
 
-  const product = {
-    id: id,
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    setSelectedImage(0);
 
-    title: "Honda City ZX i-VTEC (2022) - First Owner",
+    Promise.all([getProductById(id), getProducts()])
+      .then(([item, products]) => {
+        if (cancelled) {
+          return;
+        }
 
-    price: "₹ 8,45,000",
+        if (!item) {
+          setError("Product not found");
+          setProduct(null);
+          return;
+        }
 
-    location: "Bandra, Mumbai, Maharashtra",
+        setProduct(item);
+        setSimilarProducts(
+          products
+            .filter(
+              (entry) =>
+                String(entry.id) !== String(item.id) &&
+                entry.categoryId === item.categoryId
+            )
+            .slice(0, 4)
+        );
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || "Unable to load product");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
 
-    posted: "2 hrs ago",
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
-    images: [
-      "https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1000&q=80",
-    ],
+  const handleWishlist = () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
 
-    description:
-      "Excellent condition, meticulously maintained Honda City ZX-iVTEC (Top Model). Purchased brand new in 2022. Driven only 15,500 km with full service history recorded at authorized Honda Service Center. Insured till June 2026. Very minor scratch on left bumper, otherwise absolutely scratchless body. Perfect choice for city commute & weekend highway cruises.",
-
-    specifications: [
-      {
-        label: "Transmission",
-        value: "Manual (6-Speed)",
-      },
-      {
-        label: "Fuel Type",
-        value: "Petrol",
-      },
-      {
-        label: "Year",
-        value: "2022",
-      },
-      {
-        label: "KM Driven",
-        value: "15,500 km",
-      },
-      {
-        label: "Owner",
-        value: "First Owner",
-      },
-    ],
-
-    seller: {
-      name: "Rajesh Sharma",
-      verified: true,
-      memberSince: "Member since 2022",
-      rating: "4.8",
-      reviews: "126",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-    },
-  };
-
-  const similarProducts = [
-    {
-      id: 1,
-      title: "Honda City VX 2021",
-      price: "₹ 7,95,000",
-      image:
-        "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-      id: 2,
-      title: "Honda City V 2022",
-      price: "₹ 7,50,000",
-      image:
-        "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-      id: 3,
-      title: "Hyundai Verna 2022",
-      price: "₹ 9,25,000",
-      image:
-        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=500&q=80",
-    },
-    {
-      id: 4,
-      title: "Honda City ZX 2023",
-      price: "₹ 9,75,000",
-      image:
-        "https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&w=500&q=80",
-    },
-  ];
-
-  const handleOffer = () => {
-    console.log("Make an offer");
+    toggleWishlist(product.id);
+    setWishlistTick((value) => value + 1);
   };
 
   const handleChat = () => {
-    console.log("Chat with seller");
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    const chat = startChat({
+      sellerId: product.sellerId,
+      sellerName: product.sellerName,
+      productId: product.id,
+      productTitle: product.title,
+      productImage: product.image,
+    });
+
+    navigate(`/chat?id=${encodeURIComponent(chat.id)}`);
   };
+
+  if (loading) {
+    return React.createElement(
+      "div",
+      { className: "product-details-page" },
+      React.createElement("p", { className: "listings-status" }, "Loading product...")
+    );
+  }
+
+  if (error || !product) {
+    return React.createElement(
+      "div",
+      { className: "product-details-page" },
+      React.createElement(
+        "p",
+        { className: "listings-status listings-error" },
+        error || "Product not found"
+      )
+    );
+  }
+
+  const images = product.images.length > 0 ? product.images : [];
+  const saved = isWishlisted(product.id) || wishlistTick < 0;
 
   return React.createElement(
     "div",
     { className: "product-details-page" },
 
-    /* =========================
-       BREADCRUMB
-    ========================= */
-
     React.createElement(
       "div",
       { className: "product-breadcrumb" },
 
-      React.createElement(
-        "span",
-        null,
-        "Home"
-      ),
+      React.createElement("span", { onClick: () => navigate("/"), style: { cursor: "pointer" } }, "Home"),
 
-      React.createElement("i", {
-        className: "fa-solid fa-chevron-right",
-      }),
+      React.createElement("i", { className: "fa-solid fa-chevron-right" }),
 
       React.createElement(
         "span",
-        null,
-        "Vehicles"
+        {
+          onClick: () =>
+            navigate(
+              `/listings?category=${encodeURIComponent(product.categoryName)}&categoryId=${product.categoryId}`
+            ),
+          style: { cursor: "pointer" },
+        },
+        product.categoryName || "Listings"
       ),
 
-      React.createElement("i", {
-        className: "fa-solid fa-chevron-right",
-      }),
+      product.subCategoryName &&
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement("i", { className: "fa-solid fa-chevron-right" }),
+          React.createElement("span", null, product.subCategoryName)
+        ),
 
-      React.createElement(
-        "span",
-        null,
-        "Honda Cars"
-      ),
+      React.createElement("i", { className: "fa-solid fa-chevron-right" }),
 
-      React.createElement("i", {
-        className: "fa-solid fa-chevron-right",
-      }),
-
-      React.createElement(
-        "strong",
-        null,
-        "Honda City ZX"
-      )
+      React.createElement("strong", null, product.title)
     ),
-
-    /* =========================
-       PRODUCT MAIN
-    ========================= */
 
     React.createElement(
       "section",
       { className: "product-main-section" },
 
-      /* LEFT */
-
       React.createElement(
         "div",
         { className: "product-left" },
-
-        /* Image Gallery */
 
         React.createElement(
           "div",
           { className: "product-gallery" },
 
-          React.createElement("img", {
-            src: product.images[selectedImage],
-            alt: product.title,
-            className: "product-main-image",
-          }),
+          images.length > 0
+            ? React.createElement("img", {
+                src: images[selectedImage] || images[0],
+                alt: product.title,
+                className: "product-main-image",
+              })
+            : React.createElement(
+                "div",
+                { className: "product-main-image product-image-empty" },
+                React.createElement("i", { className: "fa-regular fa-image" })
+              ),
 
-          React.createElement(
-            "div",
-            { className: "product-thumbnails" },
+          images.length > 1 &&
+            React.createElement(
+              "div",
+              { className: "product-thumbnails" },
 
-            product.images.map((image, index) =>
-              React.createElement(
-                "button",
-                {
-                  key: image,
-                  type: "button",
-                  className: `product-thumbnail ${
-                    selectedImage === index
-                      ? "selected"
-                      : ""
-                  }`,
-                  onClick: () =>
-                    setSelectedImage(index),
-                },
+              images.map((image, index) =>
+                React.createElement(
+                  "button",
+                  {
+                    key: `${image}-${index}`,
+                    type: "button",
+                    className: `product-thumbnail ${
+                      selectedImage === index ? "selected" : ""
+                    }`,
+                    onClick: () => setSelectedImage(index),
+                  },
 
-                React.createElement("img", {
-                  src: image,
-                  alt: `Product ${index + 1}`,
-                })
+                  React.createElement("img", {
+                    src: image,
+                    alt: `Product ${index + 1}`,
+                  })
+                )
               )
             )
-          )
         ),
-
-        /* Description */
 
         React.createElement(
           "div",
           { className: "product-info-box" },
 
-          React.createElement(
-            "h2",
-            null,
-            "Description"
-          ),
+          React.createElement("h2", null, "Description"),
 
-          React.createElement(
-            "p",
-            null,
-            product.description
-          )
+          React.createElement("p", null, product.description || "No description provided.")
         ),
 
-        /* Specifications */
-
-        React.createElement(
-          "div",
-          { className: "product-info-box specifications-box" },
-
-          React.createElement(
-            "h2",
-            null,
-            "Specifications"
-          ),
-
+        product.attributes.length > 0 &&
           React.createElement(
             "div",
-            { className: "specifications-grid" },
+            { className: "product-info-box specifications-box" },
 
-            product.specifications.map(
-              (specification) =>
+            React.createElement("h2", null, "Specifications"),
+
+            React.createElement(
+              "div",
+              { className: "specifications-grid" },
+
+              product.attributes.map((attribute) =>
                 React.createElement(
                   "div",
                   {
-                    key: specification.label,
+                    key: attribute.attributeId || attribute.slug,
                     className: "specification-item",
                   },
 
-                  React.createElement(
-                    "span",
-                    null,
-                    specification.label
-                  ),
+                  React.createElement("span", null, attribute.name),
 
-                  React.createElement(
-                    "strong",
-                    null,
-                    specification.value
-                  )
+                  React.createElement("strong", null, attribute.value || "-")
                 )
+              )
             )
           )
-        )
       ),
-
-      /* RIGHT */
 
       React.createElement(
         "aside",
         { className: "product-right" },
-
-        /* Product Summary */
 
         React.createElement(
           "div",
@@ -282,65 +250,52 @@ function ProductDetails() {
             "div",
             { className: "product-price-row" },
 
-            React.createElement(
-              "h1",
-              null,
-              product.price
-            ),
+            React.createElement("h1", null, product.price),
 
             React.createElement("i", {
-              className: "fa-regular fa-heart",
+              className: saved ? "fa-solid fa-heart" : "fa-regular fa-heart",
+              onClick: handleWishlist,
+              style: { cursor: "pointer", color: saved ? "#d44949" : undefined },
             })
           ),
 
-          React.createElement(
-            "h2",
-            null,
-            product.title
-          ),
+          React.createElement("h2", null, product.title),
+
+          product.sold &&
+            React.createElement("span", { className: "product-sold-label" }, "SOLD"),
 
           React.createElement(
             "div",
             { className: "product-location-row" },
 
-            React.createElement("i", {
-              className: "fa-solid fa-location-dot",
-            }),
+            React.createElement("i", { className: "fa-solid fa-location-dot" }),
 
-            React.createElement(
-              "span",
-              null,
-              product.location
-            ),
+            React.createElement("span", null, product.location || "India"),
 
-            React.createElement(
-              "time",
-              null,
-              product.posted
-            )
+            React.createElement("time", null, product.time)
           )
         ),
-
-        /* Seller */
 
         React.createElement(
           "div",
           { className: "seller-card" },
 
-          React.createElement(
-            "h3",
-            null,
-            "Seller Profile"
-          ),
+          React.createElement("h3", null, "Seller Profile"),
 
           React.createElement(
             "div",
             { className: "seller-profile" },
 
-            React.createElement("img", {
-              src: product.seller.image,
-              alt: product.seller.name,
-            }),
+            React.createElement(
+              "div",
+              { className: "seller-initials" },
+              (product.sellerName || "S")
+                .split(" ")
+                .slice(0, 2)
+                .map((part) => part[0])
+                .join("")
+                .toUpperCase()
+            ),
 
             React.createElement(
               "div",
@@ -349,36 +304,10 @@ function ProductDetails() {
               React.createElement(
                 "div",
                 { className: "seller-name" },
-
-                React.createElement(
-                  "strong",
-                  null,
-                  product.seller.name
-                ),
-
-                product.seller.verified &&
-                  React.createElement("i", {
-                    className:
-                      "fa-solid fa-circle-check",
-                  })
+                React.createElement("strong", null, product.sellerName)
               ),
 
-              React.createElement(
-                "span",
-                null,
-                product.seller.memberSince
-              ),
-
-              React.createElement(
-                "div",
-                { className: "seller-rating" },
-
-                React.createElement("i", {
-                  className: "fa-solid fa-star",
-                }),
-
-                `${product.seller.rating} (${product.seller.reviews})`
-              )
+              React.createElement("span", null, product.condition || "Listed on Listo")
             )
           ),
 
@@ -390,25 +319,11 @@ function ProductDetails() {
               onClick: handleChat,
             },
 
-            React.createElement("i", {
-              className: "fa-regular fa-message",
-            }),
+            React.createElement("i", { className: "fa-regular fa-message" }),
 
             "CHAT WITH SELLER"
-          ),
-
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: "offer-button",
-              onClick: handleOffer,
-            },
-            "MAKE AN OFFER"
           )
         ),
-
-        /* Safety */
 
         React.createElement(
           "div",
@@ -417,97 +332,64 @@ function ProductDetails() {
           React.createElement(
             "h3",
             null,
-
-            React.createElement("i", {
-              className:
-                "fa-solid fa-circle-info",
-            }),
-
+            React.createElement("i", { className: "fa-solid fa-circle-info" }),
             " Safety Tips for Buyers"
           ),
 
           React.createElement(
             "ul",
             null,
-
-            React.createElement(
-              "li",
-              null,
-              "Meet the seller in a public place."
-            ),
-
-            React.createElement(
-              "li",
-              null,
-              "Check the product thoroughly before paying."
-            ),
-
-            React.createElement(
-              "li",
-              null,
-              "Avoid making advance payments."
-            )
+            React.createElement("li", null, "Meet the seller in a public place."),
+            React.createElement("li", null, "Check the product thoroughly before paying."),
+            React.createElement("li", null, "Avoid making advance payments.")
           )
         )
       )
     ),
 
-    /* =========================
-       SIMILAR PRODUCTS
-    ========================= */
-
-    React.createElement(
-      "section",
-      { className: "similar-section" },
-
+    similarProducts.length > 0 &&
       React.createElement(
-        "div",
-        { className: "similar-container" },
-
-        React.createElement(
-          "h2",
-          null,
-          "Similar Recommendations"
-        ),
+        "section",
+        { className: "similar-section" },
 
         React.createElement(
           "div",
-          { className: "similar-grid" },
+          { className: "similar-container" },
 
-          similarProducts.map((item) =>
-            React.createElement(
-              "article",
-              {
-                key: item.id,
-                className: "similar-card",
-              },
+          React.createElement("h2", null, "Similar Recommendations"),
 
-              React.createElement("img", {
-                src: item.image,
-                alt: item.title,
-              }),
+          React.createElement(
+            "div",
+            { className: "similar-grid" },
 
+            similarProducts.map((item) =>
               React.createElement(
-                "div",
-                { className: "similar-card-info" },
+                "article",
+                {
+                  key: item.id,
+                  className: "similar-card",
+                  onClick: () => navigate(`/product/${item.id}`),
+                  style: { cursor: "pointer" },
+                },
+
+                item.image
+                  ? React.createElement("img", {
+                      src: item.image,
+                      alt: item.title,
+                    })
+                  : null,
 
                 React.createElement(
-                  "strong",
-                  null,
-                  item.price
-                ),
-
-                React.createElement(
-                  "span",
-                  null,
-                  item.title
+                  "div",
+                  { className: "similar-card-info" },
+                  React.createElement("strong", null, item.price),
+                  React.createElement("span", null, item.title)
                 )
               )
             )
           )
         )
       )
-    )
   );
 }
 

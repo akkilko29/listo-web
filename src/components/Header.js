@@ -50,6 +50,7 @@ function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState("");
@@ -130,6 +131,42 @@ function Header() {
     setProfileOpen(false);
     navigate("/");
   };
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const keyword = searchQuery.trim();
+    const params = new URLSearchParams();
+
+    if (keyword) {
+      params.set("keyword", keyword);
+    }
+
+    if (selectedLocation) {
+      params.set("location", selectedLocation);
+    }
+
+    const query = params.toString();
+    navigate(query ? `/listings?${query}` : "/listings");
+  };
+
+  const openProtected = (event, to) => {
+    if (!isAuthenticated) {
+      event.preventDefault();
+      navigate("/login");
+    }
+  };
+
+  const headerAction = (to, iconClass, label) =>
+    React.createElement(
+      Link,
+      {
+        to,
+        className: "header-action",
+        onClick: (event) => openProtected(event, to),
+      },
+      React.createElement("i", { className: iconClass }),
+      React.createElement("span", null, label)
+    );
 
   return React.createElement(
     "header",
@@ -297,11 +334,16 @@ function Header() {
     ========================= */
 
     React.createElement(
-      "div",
-      { className: "search-container" },
+      "form",
+      {
+        className: "search-container",
+        onSubmit: handleSearch,
+      },
 
       React.createElement("input", {
         type: "text",
+        value: searchQuery,
+        onChange: (event) => setSearchQuery(event.target.value),
         placeholder:
           "Find Cars, Mobile Phones, Laptops and more...",
       }),
@@ -309,7 +351,7 @@ function Header() {
       React.createElement(
         "button",
         {
-          type: "button",
+          type: "submit",
           className: "search-button",
         },
 
@@ -318,6 +360,17 @@ function Header() {
             "fa-solid fa-magnifying-glass",
         })
       )
+    ),
+
+    /* =========================
+       WISHLIST + CHAT
+    ========================= */
+
+    React.createElement(
+      "div",
+      { className: "header-actions" },
+      headerAction("/wishlist", "fa-regular fa-heart", "Wishlist"),
+      headerAction("/chat", "fa-regular fa-comment-dots", "Chat")
     ),
 
     /* =========================
@@ -446,6 +499,10 @@ function Header() {
             {
               type: "button",
               className: "profile-menu-item",
+              onClick: () => {
+                setProfileOpen(false);
+                navigate("/wishlist");
+              },
             },
 
             React.createElement("i", {
@@ -464,6 +521,10 @@ function Header() {
             {
               type: "button",
               className: "profile-menu-item",
+              onClick: () => {
+                setProfileOpen(false);
+                navigate("/chat");
+              },
             },
 
             React.createElement("i", {
@@ -543,9 +604,9 @@ function Header() {
     ========================= */
 
     React.createElement(
-      "button",
+      Link,
       {
-        type: "button",
+        to: "/add-product",
         className: "sell-button",
       },
 
