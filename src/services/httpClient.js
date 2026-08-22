@@ -12,7 +12,11 @@ function isPublicGet(path, method) {
     return false;
   }
 
-  if (/\/favorite/i.test(path) || path.startsWith("/api/products/favorites")) {
+  if (
+    /\/favorite/i.test(path) ||
+    path.startsWith("/api/products/favorites") ||
+    path.startsWith("/api/products/my")
+  ) {
     return false;
   }
 

@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
   products: "/api/products",
   productsSearch: "/api/products/search",
   productsFilter: "/api/products/filter",
+  productsMy: "/api/products/my",
   productById: (id) => `/api/products/${id}`,
   productImagesUpload: (id) => `/api/products/${id}/images/upload`,
   productSold: (id) => `/api/products/${id}/sold`,

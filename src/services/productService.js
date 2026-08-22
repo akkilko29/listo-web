@@ -58,6 +58,11 @@ export async function getProducts() {
   return unwrapList(data).map(mapProduct);
 }
 
+export async function getMyProducts() {
+  const data = await apiGet(API_ENDPOINTS.productsMy);
+  return unwrapList(data).map(mapProduct);
+}
+
 export async function searchProducts(keyword) {
   const page = await filterProductsPage({ keyword, page: 0, size: 50 });
   return page.products;

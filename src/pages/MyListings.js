@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { getCurrentUserId } from "../services/conversationService";
 import {
   deleteProduct,
-  getProducts,
+  getMyProducts,
   markProductSold,
 } from "../services/productService";
 import "../style/ProductListing.css";
@@ -25,15 +24,12 @@ function MyListings() {
   }, [isAuthenticated, navigate]);
 
   const loadListings = () => {
-    const sellerId = getCurrentUserId();
     setLoading(true);
     setError("");
 
-    getProducts()
+    getMyProducts()
       .then((items) => {
-        setProducts(
-          items.filter((item) => String(item.sellerId) === String(sellerId))
-        );
+        setProducts(items);
       })
       .catch((err) => {
         setError(err.message || "Unable to load your listings");
