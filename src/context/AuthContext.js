@@ -7,6 +7,7 @@ import {
   persistSession,
 } from "../services/authStorage";
 import { loginRequest, registerRequest } from "../services/authService";
+import { clearFavoriteCache } from "../services/favoriteService";
 
 const AuthContext = createContext(null);
 
@@ -16,6 +17,7 @@ export function AuthProvider({ children }) {
 
   const applySession = (token, nextUser) => {
     persistSession(token, nextUser);
+    clearFavoriteCache();
     setAccessToken(token || "");
     setUser(nextUser || null);
   };
@@ -35,6 +37,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     clearSession();
+    clearFavoriteCache();
     setAccessToken("");
     setUser(null);
   };

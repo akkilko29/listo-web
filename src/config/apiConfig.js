@@ -38,6 +38,8 @@ export const API_ENDPOINTS = {
   productsSearch: "/api/products/search",
   productsFilter: "/api/products/filter",
   productById: (id) => `/api/products/${id}`,
+  productFavorite: (id) => `/api/products/${id}/favorite`,
+  productFavorites: "/api/products/favorites",
   categories: "/api/categories",
   subcategoriesByCategory: (categoryId) =>
     `/api/subcategories/category/${categoryId}`,

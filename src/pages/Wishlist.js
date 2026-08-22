@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { getProducts } from "../services/productService";
-import { getWishlistIds, toggleWishlist } from "../services/wishlistStorage";
+import { getFavorites, removeFavorite } from "../services/favoriteService";
 import "../style/ProductListing.css";
 
 function Wishlist() {
@@ -11,6 +10,8 @@ function Wishlist() {
   const { isAuthenticated } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [pendingId, setPendingId] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -19,12 +20,16 @@ function Wishlist() {
   }, [isAuthenticated, navigate]);
 
   const loadWishlist = () => {
-    const ids = getWishlistIds();
     setLoading(true);
+    setError("");
 
-    getProducts()
-      .then((all) => {
-        setProducts(all.filter((product) => ids.includes(String(product.id))));
+    getFavorites()
+      .then((items) => {
+        setProducts(items);
+      })
+      .catch((err) => {
+        setError(err.message || "Unable to load wishlist");
+        setProducts([]);
       })
       .finally(() => setLoading(false));
   };
@@ -34,6 +39,27 @@ function Wishlist() {
       loadWishlist();
     }
   }, [isAuthenticated]);
+
+  const handleRemove = async (event, productId) => {
+    event.stopPropagation();
+
+    if (pendingId) {
+      return;
+    }
+
+    setPendingId(String(productId));
+
+    try {
+      await removeFavorite(productId);
+      setProducts((current) =>
+        current.filter((product) => String(product.id) !== String(productId))
+      );
+    } catch (err) {
+      setError(err.message || "Unable to remove favorite");
+    } finally {
+      setPendingId("");
+    }
+  };
 
   if (!isAuthenticated) {
     return null;
@@ -60,7 +86,10 @@ function Wishlist() {
     loading &&
       React.createElement("p", { className: "listings-status" }, "Loading wishlist..."),
 
-    !loading && products.length === 0 &&
+    error &&
+      React.createElement("p", { className: "listings-status listings-error" }, error),
+
+    !loading && !error && products.length === 0 &&
       React.createElement(
         "p",
         { className: "listings-status" },
@@ -78,25 +107,27 @@ function Wishlist() {
             React.createElement(
               "article",
               {
-                key: product.id,
+                key: product.favoriteId || product.id,
                 className: "listing-card",
                 onClick: () => navigate(`/product/${product.id}`),
               },
               React.createElement(
                 "div",
                 { className: "listing-image-wrapper" },
-                product.image &&
-                  React.createElement("img", { src: product.image, alt: product.title }),
+                product.image
+                  ? React.createElement("img", { src: product.image, alt: product.title })
+                  : React.createElement(
+                      "div",
+                      { className: "listing-image-empty" },
+                      React.createElement("i", { className: "fa-regular fa-image" })
+                    ),
                 React.createElement(
                   "button",
                   {
                     type: "button",
                     className: "listing-heart active",
-                    onClick: (event) => {
-                      event.stopPropagation();
-                      toggleWishlist(product.id);
-                      loadWishlist();
-                    },
+                    disabled: pendingId === String(product.id),
+                    onClick: (event) => handleRemove(event, product.id),
                   },
                   React.createElement("i", { className: "fa-solid fa-heart" })
                 )
@@ -109,7 +140,7 @@ function Wishlist() {
                 React.createElement(
                   "div",
                   { className: "listing-meta" },
-                  React.createElement("span", null, product.location),
+                  React.createElement("span", null, product.location || "India"),
                   React.createElement("span", null, product.time)
                 )
               )

@@ -12,7 +12,7 @@ import {
   getSubcategoriesByCategory,
   getSubcategoryAttributes,
 } from "../services/categoryService";
-import { isWishlisted, toggleWishlist } from "../services/wishlistStorage";
+import { isFavorite, ensureFavoritesLoaded, toggleFavorite } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
 import "../style/ProductListing.css";
 
@@ -89,6 +89,7 @@ function ProductListing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [wishlistTick, setWishlistTick] = useState(0);
+  const [favoritePending, setFavoritePending] = useState("");
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [filterAttributes, setFilterAttributes] = useState([]);
@@ -125,6 +126,24 @@ function ProductListing() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    ensureFavoritesLoaded().then(() => {
+      if (!cancelled) {
+        setWishlistTick((value) => value + 1);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     setFilters((previous) => ({
@@ -381,7 +400,7 @@ function ProductListing() {
     navigate("/listings");
   };
 
-  const handleHeartClick = (event, productId) => {
+  const handleHeartClick = async (event, productId) => {
     event.stopPropagation();
 
     if (!isAuthenticated) {
@@ -389,8 +408,20 @@ function ProductListing() {
       return;
     }
 
-    toggleWishlist(productId);
-    setWishlistTick((value) => value + 1);
+    if (favoritePending) {
+      return;
+    }
+
+    setFavoritePending(String(productId));
+
+    try {
+      await toggleFavorite(productId);
+      setWishlistTick((value) => value + 1);
+    } catch {
+      /* keep current heart state */
+    } finally {
+      setFavoritePending("");
+    }
   };
 
   const heading = keyword
@@ -768,12 +799,13 @@ function ProductListing() {
                     {
                       type: "button",
                       className: `listing-heart ${
-                        isWishlisted(product.id) ? "active" : ""
+                        isFavorite(product.id) ? "active" : ""
                       }`,
+                      disabled: favoritePending === String(product.id),
                       onClick: (event) => handleHeartClick(event, product.id),
                     },
                     React.createElement("i", {
-                      className: isWishlisted(product.id)
+                      className: isFavorite(product.id)
                         ? "fa-solid fa-heart"
                         : "fa-regular fa-heart",
                     })

@@ -12,6 +12,10 @@ function isPublicGet(path, method) {
     return false;
   }
 
+  if (/\/favorite/i.test(path) || path.startsWith("/api/products/favorites")) {
+    return false;
+  }
+
   return PUBLIC_GET_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
@@ -86,4 +90,8 @@ export function apiPost(path, body) {
 
 export function apiPostForm(path, formData) {
   return request(path, { method: "POST", body: formData });
+}
+
+export function apiDelete(path) {
+  return request(path, { method: "DELETE" });
 }

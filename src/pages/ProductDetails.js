@@ -4,7 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getProductById, getProducts } from "../services/productService";
 import { startChat } from "../services/chatStorage";
-import { isWishlisted, toggleWishlist } from "../services/wishlistStorage";
+import {
+  getFavoriteStatus,
+  isFavorite,
+  toggleFavorite,
+} from "../services/favoriteService";
 import "../style/ProductDetails.css";
 
 function ProductDetails() {
@@ -17,7 +21,8 @@ function ProductDetails() {
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [wishlistTick, setWishlistTick] = useState(0);
+  const [saved, setSaved] = useState(false);
+  const [favoritePending, setFavoritePending] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,14 +69,51 @@ function ProductDetails() {
     };
   }, [id]);
 
-  const handleWishlist = () => {
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!isAuthenticated || !id) {
+      setSaved(false);
+      return undefined;
+    }
+
+    getFavoriteStatus(id)
+      .then((favorite) => {
+        if (!cancelled) {
+          setSaved(favorite);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSaved(isFavorite(id));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isAuthenticated]);
+
+  const handleWishlist = async () => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
 
-    toggleWishlist(product.id);
-    setWishlistTick((value) => value + 1);
+    if (favoritePending) {
+      return;
+    }
+
+    setFavoritePending(true);
+
+    try {
+      const nextSaved = await toggleFavorite(id);
+      setSaved(nextSaved);
+    } catch {
+      /* keep current heart state */
+    } finally {
+      setFavoritePending(false);
+    }
   };
 
   const handleChat = () => {
@@ -112,7 +154,6 @@ function ProductDetails() {
   }
 
   const images = product.images.length > 0 ? product.images : [];
-  const saved = isWishlisted(product.id) || wishlistTick < 0;
 
   return React.createElement(
     "div",
@@ -255,7 +296,11 @@ function ProductDetails() {
             React.createElement("i", {
               className: saved ? "fa-solid fa-heart" : "fa-regular fa-heart",
               onClick: handleWishlist,
-              style: { cursor: "pointer", color: saved ? "#d44949" : undefined },
+              style: {
+                cursor: favoritePending ? "wait" : "pointer",
+                color: saved ? "#d44949" : undefined,
+                opacity: favoritePending ? 0.6 : 1,
+              },
             })
           ),
 
