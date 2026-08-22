@@ -12,6 +12,33 @@ import {
 
 const LOCATION_STORAGE_KEY = "listo.selectedLocation";
 
+const ANDROID_APP_URL =
+  import.meta.env.VITE_ANDROID_APP_URL ||
+  "https://play.google.com/store/apps";
+const IOS_APP_URL =
+  import.meta.env.VITE_IOS_APP_URL || "https://apps.apple.com";
+
+function getAppDownloadPlatform() {
+  if (typeof navigator === "undefined") {
+    return "desktop";
+  }
+
+  const userAgent = navigator.userAgent || "";
+  const isIos =
+    /iPhone|iPad|iPod/i.test(userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (/android/i.test(userAgent)) {
+    return "android";
+  }
+
+  if (isIos) {
+    return "ios";
+  }
+
+  return "desktop";
+}
+
 function getInitials(name) {
   if (!name) {
     return "U";
@@ -167,6 +194,27 @@ function Header() {
       React.createElement("i", { className: iconClass }),
       React.createElement("span", null, label)
     );
+
+  const appDownloadButton = (href, iconClass, label) =>
+    React.createElement(
+      "a",
+      {
+        href,
+        className: "header-app-download",
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
+      React.createElement("i", { className: iconClass }),
+      React.createElement("span", null, label)
+    );
+
+  const appPlatform = getAppDownloadPlatform();
+  const appDownloadButtonEl =
+    appPlatform === "android"
+      ? appDownloadButton(ANDROID_APP_URL, "fa-brands fa-google-play", "Android")
+      : appPlatform === "ios"
+        ? appDownloadButton(IOS_APP_URL, "fa-brands fa-apple", "iOS")
+        : null;
 
   return React.createElement(
     "header",
@@ -365,6 +413,13 @@ function Header() {
     /* =========================
        WISHLIST + CHAT
     ========================= */
+
+    appDownloadButtonEl &&
+      React.createElement(
+        "div",
+        { className: "header-app-downloads" },
+        appDownloadButtonEl
+      ),
 
     React.createElement(
       "div",
