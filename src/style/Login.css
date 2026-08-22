@@ -153,6 +153,21 @@
   background: #1D4ED8;
 }
 
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.auth-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #fff5f5;
+  color: #d44949;
+  font-size: 13px;
+  line-height: 18px;
+}
+
 .login-divider {
   width: 100%;
   display: flex;

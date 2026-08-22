@@ -19,6 +19,8 @@ export const API_ORIGIN = String(
 export const API_BASE_URL = import.meta.env.DEV ? "" : API_ORIGIN;
 
 export const API_ENDPOINTS = {
+  login: "/api/auth/login",
+  register: "/api/auth/register",
   categories: "/api/categories",
   subcategoriesByCategory: (categoryId) =>
     `/api/subcategories/category/${categoryId}`,
@@ -27,3 +29,15 @@ export const API_ENDPOINTS = {
   subcategoryAttributes: (categoryId, subCategoryId) =>
     `/api/categories/${categoryId}/subcategories/${subCategoryId}/attributes`,
 };
+
+export function resolveMediaUrl(path) {
+  if (!path) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  return `${API_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
+}

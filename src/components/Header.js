@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import logo from "../assets/listo_logo.png";
+import { resolveMediaUrl } from "../config/apiConfig";
+import { useAuth } from "../context/AuthContext";
 import { POPULAR_LOCATIONS } from "../data/popularLocations";
 import {
   getCurrentCoordinates,
@@ -10,7 +12,42 @@ import {
 
 const LOCATION_STORAGE_KEY = "listo.selectedLocation";
 
+function getInitials(name) {
+  if (!name) {
+    return "U";
+  }
+
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
+}
+
+function UserAvatar({ user, className }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const photoUrl = resolveMediaUrl(user?.profilePhotoUrl);
+  const initials = getInitials(user?.name);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [photoUrl]);
+
+  if (photoUrl && !imageFailed) {
+    return React.createElement("img", {
+      src: photoUrl,
+      alt: user?.name || "Profile",
+      className,
+      onError: () => setImageFailed(true),
+    });
+  }
+
+  return React.createElement("span", { className }, initials);
+}
+
 function Header() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [locationQuery, setLocationQuery] = useState("");
@@ -86,6 +123,12 @@ function Header() {
   const toggleProfile = () => {
     setProfileOpen(!profileOpen);
     setLocationOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setProfileOpen(false);
+    navigate("/");
   };
 
   return React.createElement(
@@ -278,17 +321,18 @@ function Header() {
     ),
 
     /* =========================
-       LOGIN
+       LOGIN (guests only)
     ========================= */
 
-    React.createElement(
-      "a",
-      {
-        href: "/login",
-        className: "header-login",
-      },
-      "Login"
-    ),
+    !isAuthenticated &&
+      React.createElement(
+        Link,
+        {
+          to: "/login",
+          className: "header-login",
+        },
+        "Login"
+      ),
 
     /* =========================
        SELL
@@ -313,9 +357,10 @@ function Header() {
     ),
 
     /* =========================
-       PROFILE
+       PROFILE (logged-in only)
     ========================= */
 
+    isAuthenticated &&
     React.createElement(
       "div",
       {
@@ -333,11 +378,10 @@ function Header() {
           onClick: toggleProfile,
         },
 
-        React.createElement(
-          "span",
-          { className: "profile-avatar" },
-          "AS"
-        ),
+        React.createElement(UserAvatar, {
+          user,
+          className: "profile-avatar",
+        }),
 
         React.createElement("i", {
           className: `fa-solid ${
@@ -363,11 +407,10 @@ function Header() {
             "div",
             { className: "profile-dropdown-header" },
 
-            React.createElement(
-              "div",
-              { className: "profile-dropdown-avatar" },
-              "AS"
-            ),
+            React.createElement(UserAvatar, {
+              user,
+              className: "profile-dropdown-avatar",
+            }),
 
             React.createElement(
               "div",
@@ -376,7 +419,7 @@ function Header() {
               React.createElement(
                 "strong",
                 null,
-                "Ankit Sharma"
+                user?.name || "User"
               ),
 
               React.createElement(
@@ -501,6 +544,7 @@ function Header() {
               type: "button",
               className:
                 "profile-menu-item logout-item",
+              onClick: handleLogout,
             },
 
             React.createElement("i", {

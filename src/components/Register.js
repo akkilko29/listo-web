@@ -1,14 +1,25 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import { useAuth } from "../context/AuthContext";
 
 function Register() {
+  const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState("");
 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
     password: "",
+    city: "",
+    state: "",
+    profilePhoto: null,
   });
 
   const handleChange = (event) => {
@@ -20,15 +31,48 @@ function Register() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handlePhotoChange = (event) => {
+    const file = event.target.files?.[0] || null;
+
+    setFormData((previous) => ({
+      ...previous,
+      profilePhoto: file,
+    }));
+
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+
+    setPhotoPreview(file ? URL.createObjectURL(file) : "");
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
 
     if (!acceptedTerms) {
-      alert("Please accept the Terms of Service and Privacy Policy.");
+      setError("Please accept the Terms of Service and Privacy Policy.");
       return;
     }
 
-    console.log("Register:", formData);
+    setSubmitting(true);
+
+    try {
+      await register({
+        name: formData.fullName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        phone: formData.phone.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        profilePhoto: formData.profilePhoto,
+      });
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return React.createElement(
@@ -39,7 +83,6 @@ function Register() {
       "div",
       { className: "register-card" },
 
-      // Icon
       React.createElement(
         "div",
         { className: "register-icon" },
@@ -48,7 +91,6 @@ function Register() {
         })
       ),
 
-      // Heading
       React.createElement(
         "h1",
         null,
@@ -61,6 +103,13 @@ function Register() {
         "Join our premium community of sellers and buyers today."
       ),
 
+      error &&
+        React.createElement(
+          "div",
+          { className: "auth-error" },
+          error
+        ),
+
       React.createElement(
         "form",
         {
@@ -68,7 +117,41 @@ function Register() {
           onSubmit: handleSubmit,
         },
 
-        // Full Name
+        React.createElement(
+          "div",
+          { className: "register-photo-field" },
+
+          React.createElement(
+            "label",
+            { className: "register-photo-preview", htmlFor: "profilePhoto" },
+            photoPreview
+              ? React.createElement("img", {
+                  src: photoPreview,
+                  alt: "Profile preview",
+                })
+              : React.createElement("i", {
+                  className: "fa-regular fa-user",
+                })
+          ),
+
+          React.createElement(
+            "div",
+            { className: "register-photo-meta" },
+            React.createElement(
+              "label",
+              { htmlFor: "profilePhoto" },
+              "Profile photo"
+            ),
+            React.createElement("input", {
+              id: "profilePhoto",
+              name: "profilePhoto",
+              type: "file",
+              accept: "image/*",
+              onChange: handlePhotoChange,
+            })
+          )
+        ),
+
         React.createElement(
           "div",
           { className: "register-form-group" },
@@ -95,7 +178,6 @@ function Register() {
           })
         ),
 
-        // Email
         React.createElement(
           "div",
           { className: "register-form-group" },
@@ -119,10 +201,10 @@ function Register() {
             onChange: handleChange,
             placeholder: "alex.rivera@gmail.com",
             required: true,
+            autoComplete: "email",
           })
         ),
 
-        // Phone
         React.createElement(
           "div",
           { className: "register-form-group" },
@@ -144,12 +226,68 @@ function Register() {
             type: "tel",
             value: formData.phone,
             onChange: handleChange,
-            placeholder: "+91 98765 43210",
+            placeholder: "9876543210",
             required: true,
           })
         ),
 
-        // Password
+        React.createElement(
+          "div",
+          { className: "register-form-row" },
+
+          React.createElement(
+            "div",
+            { className: "register-form-group" },
+
+            React.createElement(
+              "label",
+              { htmlFor: "city" },
+              "City ",
+              React.createElement(
+                "span",
+                { className: "register-required" },
+                "*"
+              )
+            ),
+
+            React.createElement("input", {
+              id: "city",
+              name: "city",
+              type: "text",
+              value: formData.city,
+              onChange: handleChange,
+              placeholder: "Mumbai",
+              required: true,
+            })
+          ),
+
+          React.createElement(
+            "div",
+            { className: "register-form-group" },
+
+            React.createElement(
+              "label",
+              { htmlFor: "state" },
+              "State ",
+              React.createElement(
+                "span",
+                { className: "register-required" },
+                "*"
+              )
+            ),
+
+            React.createElement("input", {
+              id: "state",
+              name: "state",
+              type: "text",
+              value: formData.state,
+              onChange: handleChange,
+              placeholder: "Maharashtra",
+              required: true,
+            })
+          )
+        ),
+
         React.createElement(
           "div",
           { className: "register-form-group" },
@@ -177,6 +315,7 @@ function Register() {
               onChange: handleChange,
               placeholder: "Create a strong password",
               required: true,
+              autoComplete: "new-password",
             }),
 
             React.createElement(
@@ -197,7 +336,6 @@ function Register() {
           )
         ),
 
-        // Password strength
         React.createElement(
           "div",
           { className: "password-strength" },
@@ -243,7 +381,6 @@ function Register() {
           )
         ),
 
-        // Terms
         React.createElement(
           "label",
           { className: "terms-container" },
@@ -288,18 +425,17 @@ function Register() {
           )
         ),
 
-        // Create account
         React.createElement(
           "button",
           {
             type: "submit",
             className: "create-account-button",
+            disabled: submitting,
           },
-          "CREATE ACCOUNT"
+          submitting ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"
         )
       ),
 
-      // OR
       React.createElement(
         "div",
         { className: "register-divider" },
@@ -315,7 +451,6 @@ function Register() {
         React.createElement("span")
       ),
 
-      // Google
       React.createElement(
         "button",
         {
@@ -336,7 +471,6 @@ function Register() {
         )
       ),
 
-      // Login
       React.createElement(
         "p",
         { className: "already-account" },
@@ -344,8 +478,10 @@ function Register() {
         "Already have an account? ",
 
         React.createElement(
-          "a",
-          { href: "/login" },
+          Link,
+          {
+            to: "/login",
+          },
           "Log in"
         )
       )

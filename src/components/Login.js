@@ -1,17 +1,31 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import googleLogo from "../assets/google-icon.png";
+import { useAuth } from "../context/AuthContext";
+
 function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
+    setSubmitting(true);
 
-    console.log("Login:", {
-      email,
-      password,
-    });
+    try {
+      await login(email.trim(), password);
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return React.createElement(
@@ -22,8 +36,6 @@ function Login() {
       "div",
       { className: "login-card" },
 
-      /* Login Icon */
-
       React.createElement(
         "div",
         { className: "login-icon" },
@@ -32,8 +44,6 @@ function Login() {
           className: "fa-solid fa-database",
         })
       ),
-
-      /* Heading */
 
       React.createElement(
         "h1",
@@ -47,7 +57,12 @@ function Login() {
         "Enter your details below to access your MarketHub account."
       ),
 
-      /* Form */
+      error &&
+        React.createElement(
+          "div",
+          { className: "auth-error" },
+          error
+        ),
 
       React.createElement(
         "form",
@@ -55,8 +70,6 @@ function Login() {
           className: "login-form",
           onSubmit: handleSubmit,
         },
-
-        /* Email */
 
         React.createElement(
           "div",
@@ -81,10 +94,9 @@ function Login() {
             onChange: (event) =>
               setEmail(event.target.value),
             required: true,
+            autoComplete: "email",
           })
         ),
-
-        /* Password */
 
         React.createElement(
           "div",
@@ -115,6 +127,7 @@ function Login() {
               onChange: (event) =>
                 setPassword(event.target.value),
               required: true,
+              autoComplete: "current-password",
             }),
 
             React.createElement(
@@ -137,35 +150,30 @@ function Login() {
           )
         ),
 
-        /* Forgot Password */
-
         React.createElement(
           "div",
           { className: "forgot-container" },
 
           React.createElement(
-            "a",
+            Link,
             {
-              href: "/forgot-password",
+              to: "/forgot-password",
               className: "forgot-password",
             },
             "Forgot password?"
           )
         ),
 
-        /* Login Button */
-
         React.createElement(
           "button",
           {
             type: "submit",
             className: "login-button",
+            disabled: submitting,
           },
-          "LOG IN"
+          submitting ? "LOGGING IN..." : "LOG IN"
         )
       ),
-
-      /* OR */
 
       React.createElement(
         "div",
@@ -181,8 +189,6 @@ function Login() {
 
         React.createElement("span")
       ),
-
-      /* Google */
 
       React.createElement(
         "button",
@@ -204,8 +210,6 @@ function Login() {
         )
       ),
 
-      /* Register */
-
       React.createElement(
         "p",
         { className: "register-text" },
@@ -213,9 +217,9 @@ function Login() {
         "Don't have an account? ",
 
         React.createElement(
-          "a",
+          Link,
           {
-            href: "/register",
+            to: "/register",
           },
           "Register"
         )

@@ -340,6 +340,8 @@
   font-size: 14px;
   font-weight: 700;
   transition: box-shadow 0.15s ease;
+  object-fit: cover;
+  overflow: hidden;
 }
 
 .profile-chevron {
@@ -381,6 +383,8 @@
   font-size: 16px;
   font-weight: 700;
   border: 1px solid #c7d0d0;
+  object-fit: cover;
+  overflow: hidden;
 }
 
 .profile-info {
@@ -527,7 +531,7 @@
     font-size: 12px;
   }
 
-  .profile-button {
+  .profile-chevron {
     display: none;
   }
 }

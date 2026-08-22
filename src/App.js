@@ -6,6 +6,7 @@ import {
   Route,
 } from "react-router-dom";
 
+import { AuthProvider } from "./context/AuthContext";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 
@@ -34,78 +35,71 @@ import "./style/Home.css";
 import "./style/MegaMenuBar.css";
 import "./style/HeroSection.css";
 import "./style/AddProduct.css";
+
 function App() {
   return React.createElement(
     BrowserRouter,
     null,
 
     React.createElement(
-      Routes,
+      AuthProvider,
       null,
 
-      /* ======================================
-         MAIN WEBSITE LAYOUT
-         TopBar + Header + Page + Footer
-      ====================================== */
-
       React.createElement(
-        Route,
-        {
-          element: React.createElement(MainLayout),
-        },
+        Routes,
+        null,
 
-        React.createElement(Route, {
-          path: "/",
-          element: React.createElement(Home),
-        }),
+        React.createElement(
+          Route,
+          {
+            element: React.createElement(MainLayout),
+          },
 
-        React.createElement(Route, {
-          path: "/home",
-          element: React.createElement(Home),
-        }),
+          React.createElement(Route, {
+            path: "/",
+            element: React.createElement(Home),
+          }),
 
-        React.createElement(Route, {
-          path: "/product/:id",
-          element: React.createElement(ProductDetails),
-        }),
+          React.createElement(Route, {
+            path: "/home",
+            element: React.createElement(Home),
+          }),
 
-        React.createElement(Route, {
-          path: "/listings",
-          element: React.createElement(ProductListing),
-        }),
-        React.createElement(Route, {
-          path: "/add-product",
-          element: React.createElement(AddProduct),
-        }),
-      ),
+          React.createElement(Route, {
+            path: "/product/:id",
+            element: React.createElement(ProductDetails),
+          }),
 
-      /* ======================================
-         AUTH LAYOUT
-         TopBar + Login/Register + Footer
-         
-         NO HEADER
-         NO MEGA MENU
-      ====================================== */
+          React.createElement(Route, {
+            path: "/listings",
+            element: React.createElement(ProductListing),
+          }),
+          React.createElement(Route, {
+            path: "/add-product",
+            element: React.createElement(AddProduct),
+          })
+        ),
 
-      React.createElement(
-        Route,
-        {
-          element: React.createElement(AuthLayout),
-        },
+        React.createElement(
+          Route,
+          {
+            element: React.createElement(AuthLayout),
+          },
 
-        React.createElement(Route, {
-          path: "/login",
-          element: React.createElement(Login),
-        }),
+          React.createElement(Route, {
+            path: "/login",
+            element: React.createElement(Login),
+          }),
 
-        React.createElement(Route, {
-          path: "/register",
-          element: React.createElement(Register),
-        }),
-        React.createElement(Route, {
-          path: "/forgot-password",
-          element: React.createElement(ForgotPassword),
-        })
+          React.createElement(Route, {
+            path: "/register",
+            element: React.createElement(Register),
+          }),
+          React.createElement(Route, {
+            path: "/forgot-password",
+            element: React.createElement(ForgotPassword),
+          })
+        )
       )
     )
   );
