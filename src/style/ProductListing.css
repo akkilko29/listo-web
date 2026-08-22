@@ -134,6 +134,7 @@
 }
 
 .filter-group select,
+.filter-group > input,
 .location-filter input {
   width: 100%;
   height: 40px;

@@ -42,6 +42,8 @@ export const API_ENDPOINTS = {
     `/api/subcategories/category/${categoryId}`,
   categoryAttributes: (categoryId) =>
     `/api/categories/${categoryId}/attributes/all`,
+  categoryAttributeById: (categoryId, attributeId) =>
+    `/api/categories/${categoryId}/attributes/${attributeId}`,
   subcategoryAttributes: (categoryId, subCategoryId) =>
     `/api/categories/${categoryId}/subcategories/${subCategoryId}/attributes`,
 };

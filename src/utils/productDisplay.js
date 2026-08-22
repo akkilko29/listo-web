@@ -117,6 +117,23 @@ export function mapProduct(product) {
   };
 }
 
+export function getProductAttributeValue(product, attribute) {
+  if (!product || !attribute) {
+    return "";
+  }
+
+  const match = (product.attributes || []).find((entry) => {
+    const entryId = entry.attributeId || entry.id;
+    return (
+      (entryId && String(entryId) === String(attribute.id)) ||
+      (entry.slug && attribute.slug && entry.slug === attribute.slug) ||
+      (entry.name && attribute.name && entry.name === attribute.name)
+    );
+  });
+
+  return match?.value != null ? String(match.value) : "";
+}
+
 export function filterProducts(products, filters = {}) {
   return products.filter((product) => {
     if (filters.categoryId && String(product.categoryId) !== String(filters.categoryId)) {
@@ -147,6 +164,14 @@ export function filterProducts(products, filters = {}) {
       const haystack =
         `${product.title} ${product.description} ${product.categoryName} ${product.subCategoryName} ${product.location}`.toLowerCase();
       if (needle && !haystack.includes(needle)) {
+        return false;
+      }
+    }
+
+    if (filters.attribute && filters.attributeValue) {
+      const needle = String(filters.attributeValue).trim().toLowerCase();
+      const value = getProductAttributeValue(product, filters.attribute).toLowerCase();
+      if (needle && !value.includes(needle)) {
         return false;
       }
     }

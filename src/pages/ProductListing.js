@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import { getProducts, searchProducts } from "../services/productService";
+import { getCategoryAttribute } from "../services/categoryService";
 import { isWishlisted, toggleWishlist } from "../services/wishlistStorage";
 import { filterProducts, sortProducts } from "../utils/productDisplay";
 import { useAuth } from "../context/AuthContext";
@@ -20,6 +21,9 @@ function ProductListing() {
   const subCategoryId = searchParams.get("subCategoryId");
   const keyword = searchParams.get("keyword") || "";
   const locationParam = searchParams.get("location") || "";
+  const attributeId = searchParams.get("attributeId");
+  const attributeSlug = searchParams.get("attribute") || "";
+  const attributeValueParam = searchParams.get("attributeValue") || "";
 
   const [sortBy, setSortBy] = useState("Date Published: Newest");
   const [allProducts, setAllProducts] = useState([]);
@@ -27,6 +31,7 @@ function ProductListing() {
   const [error, setError] = useState("");
   const [wishlistTick, setWishlistTick] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedAttribute, setSelectedAttribute] = useState(null);
 
   const [filters, setFilters] = useState({
     category: category,
@@ -34,6 +39,7 @@ function ProductListing() {
     maxPrice: searchParams.get("maxPrice") || "",
     location: locationParam,
     condition: "Any",
+    attributeValue: attributeValueParam,
   });
 
   useEffect(() => {
@@ -43,8 +49,40 @@ function ProductListing() {
       location: locationParam,
       minPrice: searchParams.get("minPrice") || "",
       maxPrice: searchParams.get("maxPrice") || "",
+      attributeValue: attributeValueParam,
     }));
-  }, [category, locationParam, searchParams]);
+  }, [category, locationParam, attributeValueParam, searchParams]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!categoryId || !attributeId) {
+      setSelectedAttribute(null);
+      return undefined;
+    }
+
+    getCategoryAttribute(categoryId, attributeId)
+      .then((attribute) => {
+        if (!cancelled) {
+          setSelectedAttribute(attribute);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSelectedAttribute({
+            id: attributeId,
+            name: attributeSlug || "Attribute",
+            slug: attributeSlug,
+            filterable: true,
+            dataType: "TEXT",
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId, attributeId, attributeSlug]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,6 +126,8 @@ function ProductListing() {
       categoryId,
       subCategoryId,
       keyword,
+      attribute: selectedAttribute,
+      attributeValue: filters.attributeValue,
       location: filters.location,
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
@@ -100,6 +140,8 @@ function ProductListing() {
     categoryId,
     subCategoryId,
     keyword,
+    selectedAttribute,
+    filters.attributeValue,
     filters.location,
     filters.minPrice,
     filters.maxPrice,
@@ -142,6 +184,12 @@ function ProductListing() {
       params.delete("maxPrice");
     }
 
+    if (filters.attributeValue) {
+      params.set("attributeValue", filters.attributeValue);
+    } else {
+      params.delete("attributeValue");
+    }
+
     navigate(`/listings?${params.toString()}`);
     setCurrentPage(1);
   };
@@ -153,6 +201,7 @@ function ProductListing() {
       maxPrice: "",
       location: "",
       condition: "Any",
+      attributeValue: "",
     });
     navigate("/listings");
     setCurrentPage(1);
@@ -172,7 +221,9 @@ function ProductListing() {
 
   const heading = keyword
     ? `Results for "${keyword}"`
-    : subcategory || `${category}${filters.location ? ` in ${filters.location}` : ""}`;
+    : selectedAttribute?.name
+      ? `${selectedAttribute.name}${filters.attributeValue ? `: ${filters.attributeValue}` : ""}`
+      : subcategory || `${category}${filters.location ? ` in ${filters.location}` : ""}`;
 
   return React.createElement(
     "div",
@@ -217,6 +268,15 @@ function ProductListing() {
             "span",
             { className: "filter-chip" },
             category
+          ),
+
+        selectedAttribute &&
+          React.createElement(
+            "span",
+            { className: "filter-chip" },
+            filters.attributeValue
+              ? `${selectedAttribute.name}: ${filters.attributeValue}`
+              : selectedAttribute.name
           ),
 
         filters.location &&
@@ -333,6 +393,27 @@ function ProductListing() {
             })
           )
         ),
+
+        selectedAttribute &&
+          selectedAttribute.filterable !== false &&
+          React.createElement(
+            "div",
+            { className: "filter-group" },
+
+            React.createElement(
+              "label",
+              null,
+              String(selectedAttribute.name || "ATTRIBUTE").toUpperCase()
+            ),
+
+            React.createElement("input", {
+              type: selectedAttribute.dataType === "NUMBER" ? "number" : "text",
+              placeholder: `Filter by ${selectedAttribute.name || "value"}`,
+              value: filters.attributeValue,
+              onChange: (event) =>
+                handleFilterChange("attributeValue", event.target.value),
+            })
+          ),
 
         React.createElement(
           "div",

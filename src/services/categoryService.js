@@ -5,11 +5,28 @@ const cache = {
   categories: null,
   subcategories: {},
   categoryAttributes: {},
+  categoryAttributeById: {},
   subcategoryAttributes: {},
 };
 
 function getCacheKey(categoryId, subCategoryId) {
   return `${categoryId}:${subCategoryId}`;
+}
+
+function unwrapItem(data) {
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+
+  if (data.data && typeof data.data === "object" && !Array.isArray(data.data)) {
+    return data.data;
+  }
+
+  if (data.id || data.name || data.slug) {
+    return data;
+  }
+
+  return null;
 }
 
 export async function getCategories() {
@@ -69,6 +86,29 @@ export async function getCategoryAttributes(categoryId) {
   );
   cache.categoryAttributes[categoryId] = unwrapList(data);
   return cache.categoryAttributes[categoryId];
+}
+
+export async function getCategoryAttribute(categoryId, attributeId) {
+  if (!categoryId || !attributeId) {
+    return null;
+  }
+
+  const key = getCacheKey(categoryId, attributeId);
+
+  if (cache.categoryAttributeById[key]) {
+    return cache.categoryAttributeById[key];
+  }
+
+  const data = await apiGet(
+    API_ENDPOINTS.categoryAttributeById(categoryId, attributeId)
+  );
+  const attribute = unwrapItem(data);
+
+  if (attribute) {
+    cache.categoryAttributeById[key] = attribute;
+  }
+
+  return attribute;
 }
 
 export async function getSubcategoryAttributes(categoryId, subCategoryId) {
