@@ -1,51 +1,65 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { UI_CONFIG } from "../config/uiConfig";
+import { getCategories } from "../services/categoryService";
+import { limitCategories, withCategoryMeta } from "../utils/categoryMeta";
 
 function HeroSection() {
-  const quickCategories = [
-    {
-      name: "Mobiles",
-      icon: "fa-solid fa-mobile-screen-button",
-    },
-    {
-      name: "Cars",
-      icon: "fa-solid fa-car",
-    },
-    {
-      name: "Laptops",
-      icon: "fa-solid fa-laptop",
-    },
-    {
-      name: "Real Estate",
-      icon: "fa-solid fa-building",
-    },
-    {
-      name: "Bikes",
-      icon: "fa-solid fa-motorcycle",
-    },
-    {
-      name: "Jobs",
-      icon: "fa-solid fa-briefcase",
-    },
-  ];
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+
+        if (!cancelled) {
+          setCategories(data.map(withCategoryMeta));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCategories([]);
+        }
+      }
+    };
+
+    if (UI_CONFIG.showHeroCategories) {
+      loadCategories();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleCategories = limitCategories(
+    categories,
+    UI_CONFIG.heroMaxCategories
+  );
+
+  const openCategory = (category) => {
+    const params = new URLSearchParams({
+      category: category.name,
+      categoryId: String(category.id),
+    });
+
+    navigate(`/listings?${params.toString()}`);
+  };
 
   return React.createElement(
     "section",
     { className: "hero-section" },
 
-    React.createElement(
-      "div",
-      { className: "hero-overlay" }
-    ),
+    React.createElement("div", { className: "hero-overlay" }),
 
     React.createElement(
       "div",
       { className: "hero-content" },
 
-      React.createElement(
-        "h1",
-        null,
-        "What are you looking for today?"
-      ),
+      React.createElement("h1", null, "What are you looking for today?"),
 
       React.createElement(
         "p",
@@ -53,31 +67,30 @@ function HeroSection() {
         "Browse over 1,50,000+ local verified listings near you"
       ),
 
-      React.createElement(
-        "div",
-        { className: "hero-categories" },
+      UI_CONFIG.showHeroCategories &&
+        visibleCategories.length > 0 &&
+        React.createElement(
+          "div",
+          { className: "hero-categories" },
 
-        quickCategories.map((category) =>
-          React.createElement(
-            "button",
-            {
-              key: category.name,
-              type: "button",
-              className: "hero-category",
-            },
-
-            React.createElement("i", {
-              className: category.icon,
-            }),
-
+          visibleCategories.map((category) =>
             React.createElement(
-              "span",
-              null,
-              category.name
+              "button",
+              {
+                key: category.id,
+                type: "button",
+                className: "hero-category",
+                onClick: () => openCategory(category),
+              },
+
+              React.createElement("i", {
+                className: category.icon,
+              }),
+
+              React.createElement("span", null, category.name)
             )
           )
         )
-      )
     )
   );
 }

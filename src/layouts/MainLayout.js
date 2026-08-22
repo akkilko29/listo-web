@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { UI_CONFIG } from "../config/uiConfig";
 
 function MainLayout() {
   return React.createElement(
@@ -20,7 +21,7 @@ function MainLayout() {
       React.createElement(Outlet)
     ),
 
-    React.createElement(Footer)
+    UI_CONFIG.showFooter && React.createElement(Footer)
   );
 }
 

@@ -1,7 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
 import logo from "../assets/listo_logo.png";
+import { UI_CONFIG } from "../config/uiConfig";
+import { getCategories } from "../services/categoryService";
+import { limitCategories } from "../utils/categoryMeta";
 
 function Footer() {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCategories = async () => {
+      if (!UI_CONFIG.showFooterCategories) {
+        return;
+      }
+
+      try {
+        const data = await getCategories();
+
+        if (!cancelled) {
+          setCategories(limitCategories(data, UI_CONFIG.footerMaxCategories));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCategories([]);
+        }
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   return React.createElement(
     "footer",
     { className: "footer" },
@@ -58,44 +92,24 @@ function Footer() {
         )
       ),
 
-      /* =========================
-         POPULAR CATEGORIES
-      ========================= */
-
-      React.createElement(
-        "div",
-        { className: "footer-column" },
-
+      UI_CONFIG.showFooterCategories &&
         React.createElement(
-          "h3",
-          null,
-          "POPULAR CATEGORIES"
+          "div",
+          { className: "footer-column" },
+
+          React.createElement("h3", null, "POPULAR CATEGORIES"),
+
+          categories.map((category) =>
+            React.createElement(
+              Link,
+              {
+                key: category.id,
+                to: `/listings?category=${encodeURIComponent(category.name)}&categoryId=${category.id}`,
+              },
+              category.name
+            )
+          )
         ),
-
-        React.createElement(
-          "a",
-          { href: "#cars" },
-          "Cars & Vehicles"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#smartphones" },
-          "Smartphones & Tabs"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#real-estate" },
-          "Real Estate"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#laptops" },
-          "Laptops & Tech"
-        )
-      ),
 
       /* =========================
          TRENDING SEARCHES

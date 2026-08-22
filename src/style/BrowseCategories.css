@@ -21,7 +21,7 @@
 
 .browse-categories-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 20px;
   align-items: start;
 }
@@ -99,6 +99,37 @@
 .browse-category-item.pets .browse-category-icon {
   background: #fff9e8;
   color: #e9bc35;
+}
+
+.browse-category-item.commercial .browse-category-icon {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.browse-category-item.books .browse-category-icon {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.browse-category-item.services .browse-category-icon {
+  background: #ecfeff;
+  color: #0891b2;
+}
+
+.browse-category-item.default .browse-category-icon {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.browse-categories-status {
+  padding: 20px 0;
+  color: #64748B;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.browse-categories-status.error {
+  color: #d44949;
 }
 
 @media (max-width: 900px) {

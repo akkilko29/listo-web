@@ -1,52 +1,56 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { getCategories } from "../services/categoryService";
+import { withCategoryMeta } from "../utils/categoryMeta";
+
 import "../style/BrowseCategories.css";
 
 function BrowseCategories() {
-  const categories = [
-    {
-      name: "Vehicles",
-      icon: "fa-solid fa-car-side",
-      className: "vehicles",
-    },
-    {
-      name: "Properties",
-      icon: "fa-solid fa-building",
-      className: "properties",
-    },
-    {
-      name: "Mobiles",
-      icon: "fa-solid fa-mobile-screen-button",
-      className: "mobiles",
-    },
-    {
-      name: "Jobs",
-      icon: "fa-solid fa-suitcase",
-      className: "jobs",
-    },
-    {
-      name: "Electronics",
-      icon: "fa-solid fa-laptop",
-      className: "electronics",
-    },
-    {
-      name: "Furniture",
-      icon: "fa-solid fa-couch",
-      className: "furniture",
-    },
-    {
-      name: "Fashion",
-      icon: "fa-solid fa-shirt",
-      className: "fashion",
-    },
-    {
-      name: "Pets",
-      icon: "fa-solid fa-paw",
-      className: "pets",
-    },
-  ];
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const handleCategoryClick = (category) => {
-    console.log("Category:", category);
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCategories = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = await getCategories();
+
+        if (!cancelled) {
+          setCategories(data.map(withCategoryMeta));
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError("Unable to load categories.");
+          setCategories([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const openCategory = (category) => {
+    const params = new URLSearchParams({
+      category: category.name,
+      categoryId: String(category.id),
+    });
+
+    navigate(`/listings?${params.toString()}`);
   };
 
   return React.createElement(
@@ -63,38 +67,49 @@ function BrowseCategories() {
         "Browse Categories"
       ),
 
-      React.createElement(
-        "div",
-        { className: "browse-categories-grid" },
-
-        categories.map((category) =>
-          React.createElement(
-            "button",
-            {
-              key: category.name,
-              type: "button",
-              className: `browse-category-item ${category.className}`,
-              onClick: () =>
-                handleCategoryClick(category.name),
-            },
-
-            React.createElement(
-              "span",
-              { className: "browse-category-icon" },
-
-              React.createElement("i", {
-                className: category.icon,
-              })
-            ),
-
-            React.createElement(
-              "span",
-              { className: "browse-category-name" },
-              category.name
-            )
+      loading
+        ? React.createElement(
+            "div",
+            { className: "browse-categories-status" },
+            "Loading categories..."
           )
-        )
-      )
+        : error
+          ? React.createElement(
+              "div",
+              { className: "browse-categories-status error" },
+              error
+            )
+          : React.createElement(
+              "div",
+              { className: "browse-categories-grid" },
+
+              categories.map((category) =>
+                React.createElement(
+                  "button",
+                  {
+                    key: category.id,
+                    type: "button",
+                    className: `browse-category-item ${category.theme}`,
+                    onClick: () => openCategory(category),
+                  },
+
+                  React.createElement(
+                    "span",
+                    { className: "browse-category-icon" },
+
+                    React.createElement("i", {
+                      className: category.icon,
+                    })
+                  ),
+
+                  React.createElement(
+                    "span",
+                    { className: "browse-category-name" },
+                    category.name
+                  )
+                )
+              )
+            )
     )
   );
 }

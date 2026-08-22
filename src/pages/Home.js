@@ -4,6 +4,7 @@ import MegaMenuBar from "../components/MegaMenuBar";
 import HeroSection from "../components/HeroSection";
 import BrowseCategories from "../components/BrowseCategories";
 import TrendingClassifieds from "../components/TrendingClassifieds";
+import { UI_CONFIG } from "../config/uiConfig";
 
 function Home() {
   return React.createElement(
@@ -12,9 +13,9 @@ function Home() {
 
     React.createElement(MegaMenuBar),
 
-    React.createElement(HeroSection),
+    UI_CONFIG.showHeroBanner && React.createElement(HeroSection),
 
-    React.createElement(BrowseCategories),
+    UI_CONFIG.showBrowseCategories && React.createElement(BrowseCategories),
 
     React.createElement(TrendingClassifieds)
   );
