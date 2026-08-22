@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import OfferModal, { buildOfferMessage } from "../components/OfferModal";
 import {
   getConversation,
   getConversationMessages,
@@ -9,7 +10,12 @@ import {
   markConversationRead,
   sendConversationMessage,
 } from "../services/conversationService";
+import { getProductById } from "../services/productService";
 import "../style/Chat.css";
+
+function isOfferMessage(text) {
+  return /i'?d like to offer/i.test(String(text || ""));
+}
 
 function Chat() {
   const navigate = useNavigate();
@@ -23,6 +29,10 @@ function Chat() {
   const [threadLoading, setThreadLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [offerSubmitting, setOfferSubmitting] = useState(false);
+  const [listedPrice, setListedPrice] = useState(0);
+  const messagesRef = useRef(null);
 
   const selectedId = searchParams.get("id") || "";
 
@@ -126,6 +136,13 @@ function Chat() {
     };
   }, [isAuthenticated, selectedId]);
 
+  useEffect(() => {
+    const node = messagesRef.current;
+    if (node) {
+      node.scrollTop = node.scrollHeight;
+    }
+  }, [messages, threadLoading, selectedId]);
+
   if (!isAuthenticated) {
     return null;
   }
@@ -162,6 +179,50 @@ function Chat() {
     chats.find((chat) => String(chat.id) === String(selectedId)) ||
     null;
 
+  const openOffer = async () => {
+    if (!activeChat) {
+      return;
+    }
+
+    setOfferOpen(true);
+    setListedPrice(0);
+
+    try {
+      const product = await getProductById(activeChat.productId);
+      setListedPrice(product?.priceValue || 0);
+    } catch {
+      setListedPrice(0);
+    }
+  };
+
+  const handleOffer = async (amount) => {
+    if (!activeChat || offerSubmitting) {
+      return;
+    }
+
+    setOfferSubmitting(true);
+    setError("");
+
+    try {
+      const message = await sendConversationMessage(
+        activeChat.id,
+        buildOfferMessage(amount, activeChat.productTitle)
+      );
+
+      if (message) {
+        setMessages((current) => [...current, message]);
+      }
+
+      setOfferOpen(false);
+      const items = await getConversations();
+      setChats(items);
+    } catch (err) {
+      setError(err.message || "Unable to send offer");
+    } finally {
+      setOfferSubmitting(false);
+    }
+  };
+
   return React.createElement(
     "div",
     { className: "chat-page" },
@@ -171,6 +232,10 @@ function Chat() {
       { className: "chat-list" },
 
       React.createElement("h2", null, "Chats"),
+
+      React.createElement(
+        "div",
+        { className: "chat-list-scroll" },
 
       listLoading &&
         React.createElement("p", { className: "chat-list-empty" }, "Loading chats..."),
@@ -217,6 +282,7 @@ function Chat() {
             )
         )
       )
+      ),
     ),
 
     React.createElement(
@@ -262,17 +328,30 @@ function Chat() {
               React.createElement("span", null, activeChat.productTitle)
             ),
             React.createElement(
-              "button",
-              {
-                type: "button",
-                onClick: () => navigate(`/product/${activeChat.productId}`),
-              },
-              "View listing"
+              "div",
+              { className: "chat-thread-actions" },
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "chat-offer-button",
+                  onClick: openOffer,
+                },
+                "Make an offer"
+              ),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => navigate(`/product/${activeChat.productId}`),
+                },
+                "View listing"
+              )
             )
           ),
           React.createElement(
             "div",
-            { className: "chat-messages" },
+            { className: "chat-messages", ref: messagesRef },
             threadLoading &&
               React.createElement("p", { className: "chat-list-empty" }, "Loading messages..."),
             !threadLoading &&
@@ -287,7 +366,9 @@ function Chat() {
                 "div",
                 {
                   key: message.id,
-                  className: `chat-bubble ${message.from}`,
+                  className: `chat-bubble ${message.from}${
+                    isOfferMessage(message.text) ? " offer" : ""
+                  }`,
                 },
                 message.text
               )
@@ -308,7 +389,17 @@ function Chat() {
             )
           )
         )
-    )
+    ),
+
+    React.createElement(OfferModal, {
+      open: offerOpen,
+      listedPrice,
+      title: activeChat?.productTitle || "",
+      submitting: offerSubmitting,
+      error,
+      onClose: () => setOfferOpen(false),
+      onSubmit: handleOffer,
+    })
   );
 }
 

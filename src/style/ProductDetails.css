@@ -273,8 +273,15 @@
   margin-bottom: 8px;
 }
 
-.chat-seller-button i {
+.chat-seller-button i,
+.offer-button i {
   margin-right: 6px;
+}
+
+.chat-seller-button:disabled,
+.offer-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .offer-button {

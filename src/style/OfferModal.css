@@ -1,0 +1,109 @@
+.offer-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.offer-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+}
+
+.offer-modal h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.offer-modal p {
+  margin: 0 0 12px;
+  color: #718385;
+  font-size: 14px;
+}
+
+.offer-listed-price {
+  display: block;
+  margin-bottom: 10px;
+  color: #0F172A;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.offer-modal input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #dce3e3;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.offer-modal input:focus {
+  border-color: #2563EB;
+}
+
+.offer-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.offer-suggestions button {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #BFDBFE;
+  border-radius: 16px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.offer-modal-error {
+  color: #d44949 !important;
+  margin-top: 10px !important;
+}
+
+.offer-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.offer-modal-cancel,
+.offer-modal-submit {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.offer-modal-cancel {
+  border: 1px solid #dce3e3;
+  background: #ffffff;
+  color: #0F172A;
+}
+
+.offer-modal-submit {
+  border: none;
+  background: #2563EB;
+  color: #ffffff;
+}
+
+.offer-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

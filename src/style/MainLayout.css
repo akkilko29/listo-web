@@ -7,3 +7,19 @@
 .page-content {
   flex: 1;
 }
+
+.chat-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.chat-layout .page-content {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-layout .footer {
+  flex-shrink: 0;
+}

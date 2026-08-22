@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import TopBar from "../components/TopBar";
 import Header from "../components/Header";
@@ -7,9 +7,12 @@ import Footer from "../components/Footer";
 import { UI_CONFIG } from "../config/uiConfig";
 
 function MainLayout() {
+  const location = useLocation();
+  const isChatPage = location.pathname.startsWith("/chat");
+
   return React.createElement(
     "div",
-    { className: "app-layout" },
+    { className: `app-layout${isChatPage ? " chat-layout" : ""}` },
 
     React.createElement(TopBar),
 

@@ -8,7 +8,8 @@ import {
   isFavorite,
   toggleFavorite,
 } from "../services/favoriteService";
-import { startConversation } from "../services/conversationService";
+import OfferModal, { buildOfferMessage } from "../components/OfferModal";
+import { startConversation, sendConversationMessage } from "../services/conversationService";
 import "../style/ProductDetails.css";
 
 function ProductDetails() {
@@ -25,6 +26,8 @@ function ProductDetails() {
   const [favoritePending, setFavoritePending] = useState(false);
   const [chatPending, setChatPending] = useState(false);
   const [chatError, setChatError] = useState("");
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [offerSubmitting, setOfferSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,6 +141,34 @@ function ProductDetails() {
       setChatError(err.message || "Unable to start chat");
     } finally {
       setChatPending(false);
+    }
+  };
+
+  const handleOffer = async (amount) => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    if (offerSubmitting) {
+      return;
+    }
+
+    setOfferSubmitting(true);
+    setChatError("");
+
+    try {
+      const conversation = await startConversation(product.id);
+      await sendConversationMessage(
+        conversation.id,
+        buildOfferMessage(amount, product.title)
+      );
+      setOfferOpen(false);
+      navigate(`/chat?id=${encodeURIComponent(conversation.id)}`);
+    } catch (err) {
+      setChatError(err.message || "Unable to send offer");
+    } finally {
+      setOfferSubmitting(false);
     }
   };
 
@@ -378,6 +409,25 @@ function ProductDetails() {
             chatPending ? "STARTING CHAT..." : "CHAT WITH SELLER"
           ),
 
+          !product.sold &&
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "offer-button",
+                onClick: () => {
+                  if (!isAuthenticated) {
+                    navigate("/login");
+                    return;
+                  }
+                  setOfferOpen(true);
+                },
+                disabled: offerSubmitting,
+              },
+              React.createElement("i", { className: "fa-solid fa-tag" }),
+              "MAKE AN OFFER"
+            ),
+
           chatError &&
             React.createElement(
               "p",
@@ -450,7 +500,17 @@ function ProductDetails() {
             )
           )
         )
-      )
+      ),
+
+    React.createElement(OfferModal, {
+      open: offerOpen,
+      listedPrice: product.priceValue,
+      title: product.title,
+      submitting: offerSubmitting,
+      error: chatError,
+      onClose: () => setOfferOpen(false),
+      onSubmit: handleOffer,
+    })
   );
 }
 

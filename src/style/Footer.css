@@ -310,3 +310,8 @@
     order: initial;
   }
 }
+
+.chat-layout .footer-main {
+  min-height: 0;
+  padding: 20px 24px 16px;
+}
