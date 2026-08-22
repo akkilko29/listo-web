@@ -7,7 +7,8 @@ function ProductListing() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const category = searchParams.get("category") || "Cars & Vehicles";
+  const category = searchParams.get("category") || "All Categories";
+  const subcategory = searchParams.get("subcategory");
   const location = searchParams.get("location") || "Mumbai";
 
   const [sortBy, setSortBy] = useState("Date Published: Newest");
@@ -156,17 +157,27 @@ function ProductListing() {
         className: "fa-solid fa-chevron-right",
       }),
 
-      React.createElement("span", null, "Cars & Vehicles"),
+      React.createElement("span", null, category),
 
-      React.createElement("i", {
-        className: "fa-solid fa-chevron-right",
-      }),
+      subcategory &&
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement("i", {
+            className: "fa-solid fa-chevron-right",
+          }),
+          React.createElement("strong", null, subcategory)
+        ),
 
-      React.createElement(
-        "strong",
-        null,
-        "Used Cars in Mumbai"
-      )
+      !subcategory &&
+        React.createElement(
+          React.Fragment,
+          null,
+          React.createElement("i", {
+            className: "fa-solid fa-chevron-right",
+          }),
+          React.createElement("strong", null, `${category} in ${location}`)
+        )
     ),
 
     /* =========================

@@ -227,8 +227,76 @@
   color: #1D4ED8;
 }
 
-.mega-subcategory:hover i {
+.mega-subcategory:hover i,
+.mega-subcategory.selected i {
   color: #2563EB;
+}
+
+.mega-subcategory.selected {
+  background: #EFF6FF;
+  border-color: #2563EB;
+  color: #1D4ED8;
+}
+
+.mega-menu-loading,
+.mega-menu-error,
+.mega-status {
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mega-menu-error,
+.mega-status-error {
+  color: #d44949;
+}
+
+.mega-status {
+  grid-column: 1 / -1;
+  padding: 24px 8px;
+  text-align: center;
+}
+
+.mega-attributes {
+  margin-top: 18px;
+}
+
+.mega-attributes-title {
+  margin-bottom: 10px;
+  color: #64748B;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.mega-attributes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mega-attribute-chip {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #e4eaea;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #0F172A;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mega-attribute-chip:hover {
+  border-color: #2563EB;
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.mega-attribute-required {
+  margin-left: 4px;
+  color: #d44949;
 }
 
 .mega-all-categories {
