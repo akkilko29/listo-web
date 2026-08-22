@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
+import { LocationProvider } from "./context/LocationContext";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 
@@ -47,6 +48,10 @@ function App() {
     React.createElement(
       AuthProvider,
       null,
+
+      React.createElement(
+        LocationProvider,
+        null,
 
       React.createElement(
         Routes,
@@ -121,6 +126,7 @@ function App() {
         )
       )
     )
+  )
   );
 }
 

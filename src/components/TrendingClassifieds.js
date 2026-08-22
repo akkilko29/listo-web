@@ -1,22 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { getProducts } from "../services/productService";
+import { appendLocationParam, useAppLocation } from "../context/LocationContext";
+import { filterProductsPage } from "../services/productService";
 import "../style/TrendingClassifieds.css";
 
 function TrendingClassifieds() {
   const navigate = useNavigate();
+  const { location } = useAppLocation();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError("");
 
-    getProducts()
-      .then((products) => {
+    filterProductsPage({
+      location,
+      sort: "Date Published: Newest",
+      page: 0,
+      size: 8,
+    })
+      .then((page) => {
         if (!cancelled) {
-          setListings(products.slice(0, 8));
+          setListings(page.products);
         }
       })
       .catch((err) => {
@@ -33,7 +42,13 @@ function TrendingClassifieds() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [location]);
+
+  const openAllListings = () => {
+    const params = appendLocationParam(new URLSearchParams(), location);
+    const query = params.toString();
+    navigate(query ? `/listings?${query}` : "/listings");
+  };
 
   return React.createElement(
     "section",
@@ -50,7 +65,8 @@ function TrendingClassifieds() {
         React.createElement(
           "h2",
           { className: "home-section-title" },
-          "Trending Classifieds"
+          "Trending Classifieds",
+          location ? ` in ${location.split(",")[0]}` : ""
         ),
 
         React.createElement(
@@ -58,7 +74,7 @@ function TrendingClassifieds() {
           {
             type: "button",
             className: "view-listings-button",
-            onClick: () => navigate("/listings"),
+            onClick: openAllListings,
           },
           "View All Listings"
         )

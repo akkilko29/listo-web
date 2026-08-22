@@ -14,5 +14,6 @@ export const POPULAR_LOCATIONS = [
   "Chandigarh, Chandigarh",
   "Kochi, Kerala",
   "Indore, Madhya Pradesh",
+  "Patna, Bihar",
   "Surat, Gujarat",
 ];

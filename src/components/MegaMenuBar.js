@@ -11,9 +11,11 @@ import {
   ALL_CATEGORIES_ITEM,
   withCategoryMeta,
 } from "../utils/categoryMeta";
+import { appendLocationParam, useAppLocation } from "../context/LocationContext";
 
 function MegaMenuBar() {
   const navigate = useNavigate();
+  const { location } = useAppLocation();
   const menuRef = useRef(null);
   const categoryRequestId = useRef(0);
   const subcategoryRequestId = useRef(0);
@@ -192,6 +194,7 @@ function MegaMenuBar() {
       params.set("subCategoryId", String(subCategory.id));
     }
 
+    appendLocationParam(params, location);
     setMenuOpen(false);
     navigate(`/listings?${params.toString()}`);
   };
@@ -217,6 +220,7 @@ function MegaMenuBar() {
 
     params.set("attribute", attribute.slug || attribute.name);
     params.set("attributeId", String(attribute.id));
+    appendLocationParam(params, location);
 
     setMenuOpen(false);
     navigate(`/listings?${params.toString()}`);

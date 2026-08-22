@@ -14,6 +14,7 @@ import {
 } from "../services/categoryService";
 import { isFavorite, ensureFavoritesLoaded, toggleFavorite } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
+import { appendLocationParam, useAppLocation } from "../context/LocationContext";
 import "../style/ProductListing.css";
 
 const PAGE_SIZE = 10;
@@ -69,13 +70,14 @@ function ProductListing() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { location: globalLocation, setLocation } = useAppLocation();
 
   const category = searchParams.get("category") || "All Categories";
   const subcategory = searchParams.get("subcategory");
   const categoryId = searchParams.get("categoryId") || "";
   const subCategoryId = searchParams.get("subCategoryId") || "";
   const keyword = searchParams.get("keyword") || "";
-  const locationParam = searchParams.get("location") || "";
+  const locationParam = globalLocation || "";
   const minPriceParam = searchParams.get("minPrice") || "";
   const maxPriceParam = searchParams.get("maxPrice") || "";
   const conditionParam = searchParams.get("condition") || "";
@@ -233,6 +235,23 @@ function ProductListing() {
   }, [filters.categoryId, filters.subCategoryId]);
 
   useEffect(() => {
+    const current = searchParams.get("location") || "";
+    if (current === locationParam) {
+      return undefined;
+    }
+
+    const params = new URLSearchParams(searchParams);
+    if (locationParam) {
+      params.set("location", locationParam);
+    } else {
+      params.delete("location");
+    }
+    params.delete("page");
+    navigate(`/listings?${params.toString()}`, { replace: true });
+    return undefined;
+  }, [locationParam]);
+
+  useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError("");
@@ -278,6 +297,7 @@ function ProductListing() {
     minPriceParam,
     maxPriceParam,
     locationParam,
+    globalLocation,
     conditionParam,
     searchParams,
     sortBy,
@@ -348,6 +368,9 @@ function ProductListing() {
 
     if (filters.location) {
       params.set("location", filters.location);
+      setLocation(filters.location);
+    } else {
+      setLocation("");
     }
 
     if (filters.minPrice) {
@@ -393,11 +416,13 @@ function ProductListing() {
       subCategoryName: "",
       minPrice: "",
       maxPrice: "",
-      location: "",
+      location: globalLocation || "",
       condition: "Any",
       attributes: {},
     });
-    navigate("/listings");
+    const params = new URLSearchParams();
+    appendLocationParam(params, globalLocation);
+    navigate(params.toString() ? `/listings?${params.toString()}` : "/listings");
   };
 
   const handleHeartClick = async (event, productId) => {

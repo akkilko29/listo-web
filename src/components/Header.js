@@ -4,13 +4,12 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../assets/listo_logo.png";
 import { resolveMediaUrl } from "../config/apiConfig";
 import { useAuth } from "../context/AuthContext";
+import { useAppLocation } from "../context/LocationContext";
 import { POPULAR_LOCATIONS } from "../data/popularLocations";
 import {
   getCurrentCoordinates,
   reverseGeocode,
 } from "../services/locationService";
-
-const LOCATION_STORAGE_KEY = "listo.selectedLocation";
 
 const ANDROID_APP_URL =
   import.meta.env.VITE_ANDROID_APP_URL ||
@@ -76,6 +75,7 @@ function Header() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isAuthenticated, logout } = useAuth();
+  const { location, setLocation } = useAppLocation();
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(
@@ -84,13 +84,6 @@ function Header() {
   const [locationQuery, setLocationQuery] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState("");
-
-  const [selectedLocation, setSelectedLocation] = useState(() => {
-    return (
-      window.localStorage.getItem(LOCATION_STORAGE_KEY) ||
-      "Mumbai, Maharashtra"
-    );
-  });
 
   const locationRef = useRef(null);
   const profileRef = useRef(null);
@@ -127,12 +120,22 @@ function Header() {
     };
   }, []);
 
-  const selectLocation = (location) => {
-    setSelectedLocation(location);
-    window.localStorage.setItem(LOCATION_STORAGE_KEY, location);
+  const selectLocation = (nextLocation) => {
+    setLocation(nextLocation);
     setLocationOpen(false);
     setLocationQuery("");
     setLocationError("");
+
+    if (window.location.pathname.startsWith("/listings")) {
+      const params = new URLSearchParams(searchParams);
+      if (nextLocation) {
+        params.set("location", nextLocation);
+      } else {
+        params.delete("location");
+      }
+      params.delete("page");
+      navigate(`/listings?${params.toString()}`, { replace: true });
+    }
   };
 
   const handleUseCurrentLocation = async () => {
@@ -173,6 +176,10 @@ function Header() {
 
     if (keyword) {
       params.set("keyword", keyword);
+    }
+
+    if (location) {
+      params.set("location", location);
     }
 
     const query = params.toString();
@@ -274,7 +281,7 @@ function Header() {
         React.createElement(
           "span",
           { className: "location-text" },
-          selectedLocation
+          location || "All India"
         ),
 
         React.createElement("i", {
@@ -346,26 +353,43 @@ function Header() {
             "div",
             { className: "location-list" },
 
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: `location-option ${!location ? "active" : ""}`,
+                onClick: () => selectLocation(""),
+              },
+              React.createElement("i", {
+                className: "fa-solid fa-globe option-icon",
+              }),
+              React.createElement("span", null, "All India"),
+              !location &&
+                React.createElement("i", {
+                  className: "fa-solid fa-check option-check",
+                })
+            ),
+
             popularLocations.length > 0
-              ? popularLocations.map((location) =>
+              ? popularLocations.map((place) =>
                   React.createElement(
                     "button",
                     {
-                      key: location,
+                      key: place,
                       type: "button",
                       className: `location-option ${
-                        selectedLocation === location ? "active" : ""
+                        location === place ? "active" : ""
                       }`,
-                      onClick: () => selectLocation(location),
+                      onClick: () => selectLocation(place),
                     },
 
                     React.createElement("i", {
                       className: "fa-solid fa-location-dot option-icon",
                     }),
 
-                    React.createElement("span", null, location),
+                    React.createElement("span", null, place),
 
-                    selectedLocation === location &&
+                    location === place &&
                       React.createElement("i", {
                         className: "fa-solid fa-check option-check",
                       })
