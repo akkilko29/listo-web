@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import logo from "../assets/listo_logo.png";
 import { resolveMediaUrl } from "../config/apiConfig";
@@ -74,10 +74,13 @@ function UserAvatar({ user, className }) {
 
 function Header() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAuthenticated, logout } = useAuth();
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("keyword") || ""
+  );
   const [locationQuery, setLocationQuery] = useState("");
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState("");
@@ -95,6 +98,10 @@ function Header() {
   const popularLocations = POPULAR_LOCATIONS.filter((location) =>
     location.toLowerCase().includes(locationQuery.trim().toLowerCase())
   );
+
+  useEffect(() => {
+    setSearchQuery(searchParams.get("keyword") || "");
+  }, [searchParams]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -166,10 +173,6 @@ function Header() {
 
     if (keyword) {
       params.set("keyword", keyword);
-    }
-
-    if (selectedLocation) {
-      params.set("location", selectedLocation);
     }
 
     const query = params.toString();
@@ -389,11 +392,13 @@ function Header() {
       },
 
       React.createElement("input", {
-        type: "text",
+        type: "search",
+        name: "keyword",
         value: searchQuery,
         onChange: (event) => setSearchQuery(event.target.value),
         placeholder:
           "Find Cars, Mobile Phones, Laptops and more...",
+        autoComplete: "off",
       }),
 
       React.createElement(

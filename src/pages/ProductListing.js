@@ -87,6 +87,7 @@ function ProductListing() {
     const filtered = filterProducts(allProducts, {
       categoryId,
       subCategoryId,
+      keyword,
       location: filters.location,
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
@@ -98,6 +99,7 @@ function ProductListing() {
     allProducts,
     categoryId,
     subCategoryId,
+    keyword,
     filters.location,
     filters.minPrice,
     filters.maxPrice,

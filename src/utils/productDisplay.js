@@ -133,7 +133,20 @@ export function filterProducts(products, filters = {}) {
     if (filters.location) {
       const query = filters.location.trim().toLowerCase();
       const haystack = `${product.city} ${product.state} ${product.location}`.toLowerCase();
-      if (query && !haystack.includes(query)) {
+      const tokens = query.split(/[\s,]+/).filter((token) => token.length > 1);
+      const matchesLocation =
+        haystack.includes(query) ||
+        tokens.some((token) => haystack.includes(token));
+      if (query && !matchesLocation) {
+        return false;
+      }
+    }
+
+    if (filters.keyword) {
+      const needle = String(filters.keyword).trim().toLowerCase();
+      const haystack =
+        `${product.title} ${product.description} ${product.categoryName} ${product.subCategoryName} ${product.location}`.toLowerCase();
+      if (needle && !haystack.includes(needle)) {
         return false;
       }
     }

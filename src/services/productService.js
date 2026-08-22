@@ -14,9 +14,29 @@ export async function searchProducts(keyword) {
     return getProducts();
   }
 
-  const params = new URLSearchParams({ keyword: query });
-  const data = await apiGet(`${API_ENDPOINTS.productsSearch}?${params.toString()}`);
-  return unwrapList(data).map(mapProduct);
+  const needle = query.toLowerCase();
+  const matchKeyword = (product) =>
+    `${product.title} ${product.description} ${product.categoryName} ${product.subCategoryName} ${product.location}`
+      .toLowerCase()
+      .includes(needle);
+
+  try {
+    const params = new URLSearchParams({ keyword: query });
+    const data = await apiGet(
+      `${API_ENDPOINTS.productsSearch}?${params.toString()}`
+    );
+    const results = unwrapList(data).map(mapProduct);
+
+    if (results.length === 0) {
+      const products = await getProducts();
+      return products.filter(matchKeyword);
+    }
+
+    return results.some(matchKeyword) ? results.filter(matchKeyword) : results;
+  } catch {
+    const products = await getProducts();
+    return products.filter(matchKeyword);
+  }
 }
 
 export async function getProductById(id) {
