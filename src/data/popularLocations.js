@@ -1,0 +1,18 @@
+export const POPULAR_LOCATIONS = [
+  "Mumbai, Maharashtra",
+  "Delhi, Delhi",
+  "Bengaluru, Karnataka",
+  "Hyderabad, Telangana",
+  "Chennai, Tamil Nadu",
+  "Pune, Maharashtra",
+  "Kolkata, West Bengal",
+  "Ahmedabad, Gujarat",
+  "Jaipur, Rajasthan",
+  "Lucknow, Uttar Pradesh",
+  "Noida, Uttar Pradesh",
+  "Gurgaon, Haryana",
+  "Chandigarh, Chandigarh",
+  "Kochi, Kerala",
+  "Indore, Madhya Pradesh",
+  "Surat, Gujarat",
+];

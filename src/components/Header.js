@@ -1,27 +1,35 @@
 import React, { useState, useRef, useEffect } from "react";
-import logo from "../assets/listo_logo.png";
 import { Link } from "react-router-dom";
+
+import logo from "../assets/listo_logo.png";
+import { POPULAR_LOCATIONS } from "../data/popularLocations";
+import {
+  getCurrentCoordinates,
+  reverseGeocode,
+} from "../services/locationService";
+
+const LOCATION_STORAGE_KEY = "listo.selectedLocation";
+
 function Header() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [locationQuery, setLocationQuery] = useState("");
+  const [detectingLocation, setDetectingLocation] = useState(false);
+  const [locationError, setLocationError] = useState("");
 
-  const [selectedLocation, setSelectedLocation] = useState(
-    "Mumbai, Maharashtra"
-  );
+  const [selectedLocation, setSelectedLocation] = useState(() => {
+    return (
+      window.localStorage.getItem(LOCATION_STORAGE_KEY) ||
+      "Mumbai, Maharashtra"
+    );
+  });
 
   const locationRef = useRef(null);
   const profileRef = useRef(null);
 
-  const locations = [
-    "Mumbai, Maharashtra",
-    "Delhi, Delhi",
-    "Bangalore, Karnataka",
-    "Hyderabad, Telangana",
-    "Chennai, Tamil Nadu",
-    "Pune, Maharashtra",
-    "Kolkata, West Bengal",
-    "Noida, Uttar Pradesh",
-  ];
+  const popularLocations = POPULAR_LOCATIONS.filter((location) =>
+    location.toLowerCase().includes(locationQuery.trim().toLowerCase())
+  );
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -49,7 +57,25 @@ function Header() {
 
   const selectLocation = (location) => {
     setSelectedLocation(location);
+    window.localStorage.setItem(LOCATION_STORAGE_KEY, location);
     setLocationOpen(false);
+    setLocationQuery("");
+    setLocationError("");
+  };
+
+  const handleUseCurrentLocation = async () => {
+    setDetectingLocation(true);
+    setLocationError("");
+
+    try {
+      const coords = await getCurrentCoordinates();
+      const label = await reverseGeocode(coords.latitude, coords.longitude);
+      selectLocation(label);
+    } catch (error) {
+      setLocationError(error.message || "Unable to fetch current location");
+    } finally {
+      setDetectingLocation(false);
+    }
   };
 
   const toggleLocation = () => {
@@ -140,37 +166,85 @@ function Header() {
             "Select Location"
           ),
 
-          locations.map((location) =>
+          React.createElement("input", {
+            type: "text",
+            className: "location-search",
+            placeholder: "Search city, area...",
+            value: locationQuery,
+            onChange: (event) => setLocationQuery(event.target.value),
+          }),
+
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "location-current-button",
+              onClick: handleUseCurrentLocation,
+              disabled: detectingLocation,
+            },
+
+            React.createElement("i", {
+              className: detectingLocation
+                ? "fa-solid fa-spinner fa-spin option-icon"
+                : "fa-solid fa-location-crosshairs option-icon",
+            }),
+
             React.createElement(
-              "button",
-              {
-                key: location,
-                type: "button",
-                className: `location-option ${
-                  selectedLocation === location
-                    ? "active"
-                    : ""
-                }`,
-                onClick: () => selectLocation(location),
-              },
-
-              React.createElement("i", {
-                className:
-                  "fa-solid fa-location-dot option-icon",
-              }),
-
-              React.createElement(
-                "span",
-                null,
-                location
-              ),
-
-              selectedLocation === location &&
-                React.createElement("i", {
-                  className:
-                    "fa-solid fa-check option-check",
-                })
+              "span",
+              null,
+              detectingLocation
+                ? "Detecting current location..."
+                : "Use current location"
             )
+          ),
+
+          locationError &&
+            React.createElement(
+              "div",
+              { className: "location-error" },
+              locationError
+            ),
+
+          React.createElement(
+            "div",
+            { className: "dropdown-title popular-title" },
+            "Popular locations"
+          ),
+
+          React.createElement(
+            "div",
+            { className: "location-list" },
+
+            popularLocations.length > 0
+              ? popularLocations.map((location) =>
+                  React.createElement(
+                    "button",
+                    {
+                      key: location,
+                      type: "button",
+                      className: `location-option ${
+                        selectedLocation === location ? "active" : ""
+                      }`,
+                      onClick: () => selectLocation(location),
+                    },
+
+                    React.createElement("i", {
+                      className: "fa-solid fa-location-dot option-icon",
+                    }),
+
+                    React.createElement("span", null, location),
+
+                    selectedLocation === location &&
+                      React.createElement("i", {
+                        className: "fa-solid fa-check option-check",
+                      })
+                  )
+                )
+              : React.createElement(
+                  "div",
+                  { className: "location-empty" },
+                  "No matching locations"
+                )
           )
         )
     ),
