@@ -12,9 +12,11 @@ import AuthLayout from "./layouts/AuthLayout";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import ProductListing from "./pages/ProductListing";
+import AddProduct from "./pages/AddProduct";
 
 import Login from "./components/Login";
 import Register from "./components/Register";
+import ForgotPassword from "./components/ForgotPassword";
 
 import "./style/App.css";
 import "./style/MainLayout.css";
@@ -26,10 +28,12 @@ import "./style/Footer.css";
 
 import "./style/Login.css";
 import "./style/Register.css";
+import "./style/ForgotPassword.css";
 
 import "./style/Home.css";
 import "./style/MegaMenuBar.css";
 import "./style/HeroSection.css";
+import "./style/AddProduct.css";
 function App() {
   return React.createElement(
     BrowserRouter,
@@ -68,7 +72,11 @@ function App() {
         React.createElement(Route, {
           path: "/listings",
           element: React.createElement(ProductListing),
-        })
+        }),
+        React.createElement(Route, {
+          path: "/add-product",
+          element: React.createElement(AddProduct),
+        }),
       ),
 
       /* ======================================
@@ -93,6 +101,10 @@ function App() {
         React.createElement(Route, {
           path: "/register",
           element: React.createElement(Register),
+        }),
+        React.createElement(Route, {
+          path: "/forgot-password",
+          element: React.createElement(ForgotPassword),
         })
       )
     )

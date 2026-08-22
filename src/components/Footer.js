@@ -1,5 +1,6 @@
 import React from "react";
 import logo from "../assets/listo_logo.png";
+
 function Footer() {
   return React.createElement(
     "footer",
@@ -13,15 +14,20 @@ function Footer() {
       "div",
       { className: "footer-main" },
 
-      /* Brand */
+      /* =========================
+         BRAND
+      ========================= */
 
       React.createElement(
         "div",
         { className: "footer-brand" },
 
         React.createElement(
-          "div",
-          { className: "footer-logo" },
+          "a",
+          {
+            href: "/",
+            className: "footer-logo",
+          },
 
           React.createElement("img", {
             src: logo,
@@ -33,21 +39,28 @@ function Footer() {
             "span",
             null,
             "Listo"
-          )),
+          )
+        ),
 
-        // Rest of footer content...
         React.createElement(
           "p",
           null,
+
           "India's most trusted online classifieds platform",
+
           React.createElement("br"),
+
           "to buy & sell close-to-heart items with verified",
+
           React.createElement("br"),
+
           "local neighbors."
         )
       ),
 
-      /* Popular Categories */
+      /* =========================
+         POPULAR CATEGORIES
+      ========================= */
 
       React.createElement(
         "div",
@@ -84,7 +97,9 @@ function Footer() {
         )
       ),
 
-      /* Trending Searches */
+      /* =========================
+         TRENDING SEARCHES
+      ========================= */
 
       React.createElement(
         "div",
@@ -121,7 +136,9 @@ function Footer() {
         )
       ),
 
-      /* About */
+      /* =========================
+         ABOUT US
+      ========================= */
 
       React.createElement(
         "div",
@@ -167,15 +184,34 @@ function Footer() {
       "div",
       { className: "footer-bottom" },
 
+      /* Copyright */
+
       React.createElement(
         "span",
         null,
-        "© 2026 Listo Platforms Inc. All rights reserved."
+
+        "© " + new Date().getFullYear() + " Listo. ",
+
+        React.createElement("i", {
+          className: "fa-solid fa-heart made-bihar-heart",
+        }),
+
+        " Made in Bihar. All rights reserved.",
+
+        React.createElement("i", {
+          className: "fa-solid fa-lock",
+        }),
+
+        " End-to-End Encrypted"
       ),
+
+      /* Social Icons */
 
       React.createElement(
         "div",
         { className: "footer-social" },
+
+        /* Facebook */
 
         React.createElement(
           "a",
@@ -183,10 +219,13 @@ function Footer() {
             href: "#facebook",
             "aria-label": "Facebook",
           },
+
           React.createElement("i", {
             className: "fa-brands fa-facebook-f",
           })
         ),
+
+        /* X */
 
         React.createElement(
           "a",
@@ -194,10 +233,13 @@ function Footer() {
             href: "#x",
             "aria-label": "X",
           },
+
           React.createElement("i", {
             className: "fa-brands fa-x-twitter",
           })
         ),
+
+        /* LinkedIn */
 
         React.createElement(
           "a",
@@ -205,10 +247,13 @@ function Footer() {
             href: "#linkedin",
             "aria-label": "LinkedIn",
           },
+
           React.createElement("i", {
             className: "fa-brands fa-linkedin-in",
           })
         ),
+
+        /* Instagram */
 
         React.createElement(
           "a",
@@ -216,6 +261,7 @@ function Footer() {
             href: "#instagram",
             "aria-label": "Instagram",
           },
+
           React.createElement("i", {
             className: "fa-brands fa-instagram",
           })

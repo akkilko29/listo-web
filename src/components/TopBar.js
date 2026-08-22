@@ -19,12 +19,6 @@ function TopBar() {
         "a",
         { href: "#support" },
         "Help & Support"
-      ),
-
-      React.createElement(
-        "a",
-        { href: "#premium" },
-        "Explore Premium"
       )
     )
   );

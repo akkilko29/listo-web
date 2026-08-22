@@ -5,15 +5,28 @@
   margin-top: auto;
 }
 
+/* =========================
+   FOOTER MAIN
+========================= */
+
 .footer-main {
   max-width: 1280px;
   margin: 0 auto;
+
   min-height: 180px;
+
   padding: 40px 24px 32px;
+
   display: grid;
+
   grid-template-columns: 2.5fr 1fr 1fr 1fr;
+
   column-gap: 40px;
 }
+
+/* =========================
+   BRAND
+========================= */
 
 .footer-brand {
   display: flex;
@@ -21,101 +34,23 @@
   align-items: flex-start;
 }
 
+/* Logo */
+
 .footer-logo {
   display: flex;
   align-items: center;
   gap: 8px;
+
+  text-decoration: none !important;
+  color: inherit;
+
+  cursor: pointer;
 }
 
-.footer-logo-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: #2563EB;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.footer-logo span {
-  color: #ffffff;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-}
-
-.footer-brand p {
-  margin: 12px 0 0;
-  color: #94A3B8;
-  font-size: 14px;
-  line-height: 22px;
-  max-width: 360px;
-}
-
-.footer-column {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.footer-column h3 {
-  margin: 0 0 6px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 18px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.footer-column a {
-  color: #94A3B8;
-  font-size: 14px;
-  line-height: 20px;
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.footer-column a:hover {
-  color: #ffffff;
-}
-
-.footer-bottom {
-  height: 48px;
-  padding: 0 24px;
-  background: #0B1224;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #94A3B8;
-  font-size: 13px;
-}
-
-.footer-social {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.footer-social a {
-  color: #94A3B8;
-  font-size: 16px;
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.footer-social a:hover {
-  color: #ffffff;
-}
-
-.footer-logo {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+.footer-logo:hover,
+.footer-logo:focus,
+.footer-logo:active {
+  text-decoration: none !important;
 }
 
 .footer-logo-image {
@@ -125,30 +60,198 @@
   object-fit: contain;
 
   display: block;
+
+  flex-shrink: 0;
 }
 
 .footer-logo span {
   color: #ffffff;
-  font-size: 14px;
+
+  font-size: 22px;
+
   font-weight: 800;
+
+  letter-spacing: -0.4px;
+
+  line-height: 1;
+
+  text-decoration: none !important;
 }
 
+/* Brand Description */
+
+.footer-brand p {
+  margin: 12px 0 0;
+
+  color: #94A3B8;
+
+  font-size: 14px;
+
+  line-height: 22px;
+
+  max-width: 360px;
+}
+
+/* =========================
+   FOOTER COLUMNS
+========================= */
+
+.footer-column {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 10px;
+}
+
+.footer-column h3 {
+  margin: 0 0 6px;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
+  line-height: 18px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.4px;
+}
+
+.footer-column a {
+  color: #94A3B8;
+
+  font-size: 14px;
+
+  line-height: 20px;
+
+  text-decoration: none;
+
+  transition: color 0.15s ease;
+}
+
+.footer-column a:hover {
+  color: #ffffff;
+}
+
+/* =========================
+   FOOTER BOTTOM
+========================= */
+
+.footer-bottom {
+  min-height: 48px;
+
+  padding: 0 24px;
+
+  background: #0B1224;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  color: #94A3B8;
+
+  font-size: 13px;
+}
+
+/* =========================
+   MADE IN BIHAR HEART
+========================= */
+
+.made-bihar-heart {
+  color: #ef4444;
+  font-size: 12px;
+  margin: 0 3px;
+}
+
+/* =========================
+   SECURITY
+========================= */
+
+.footer-security {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #94A3B8;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.footer-security i {
+  color: #2563EB;
+  font-size: 12px;
+}
+
+/* =========================
+   SOCIAL
+========================= */
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-social a {
+  color: #94A3B8;
+
+  font-size: 16px;
+
+  text-decoration: none;
+
+  transition: color 0.15s ease;
+}
+
+.footer-social a:hover {
+  color: #ffffff;
+}
+
+/* =========================
+   TABLET
+========================= */
+
 @media (max-width: 800px) {
+
   .footer-main {
     grid-template-columns: 2fr 1fr 1fr;
+
     row-gap: 28px;
+
     padding: 32px 24px;
   }
 
   .footer-brand {
     grid-column: 1 / -1;
   }
+
+  .footer-bottom {
+    flex-wrap: wrap;
+
+    min-height: 48px;
+
+    padding: 12px 24px;
+  }
 }
 
+/* =========================
+   MOBILE
+========================= */
+
 @media (max-width: 550px) {
+
   .footer-main {
     grid-template-columns: 1fr 1fr;
+
     column-gap: 24px;
+
     padding: 28px 20px;
   }
 
@@ -157,20 +260,53 @@
   }
 
   .footer-bottom {
-    padding: 0 20px;
+    padding: 12px 20px;
+
+    gap: 12px;
+
+    justify-content: center;
+
+    text-align: center;
+  }
+
+  .footer-security {
+    order: 2;
+  }
+
+  .footer-social {
+    order: 3;
   }
 }
 
+/* =========================
+   SMALL MOBILE
+========================= */
+
 @media (max-width: 380px) {
+
   .footer-main {
     grid-template-columns: 1fr;
+
+    row-gap: 24px;
   }
 
   .footer-bottom {
-    height: auto;
     min-height: 48px;
+
     padding: 12px 20px;
+
+    flex-direction: column;
+
     gap: 10px;
+
     flex-wrap: wrap;
+  }
+
+  .footer-security {
+    order: initial;
+  }
+
+  .footer-social {
+    order: initial;
   }
 }

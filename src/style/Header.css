@@ -13,9 +13,42 @@
 .header-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+
   width: 140px;
   flex-shrink: 0;
+
+  text-decoration: none !important;
+  color: inherit;
+}
+
+.header-logo:hover,
+.header-logo:focus,
+.header-logo:active {
+  text-decoration: none !important;
+}
+
+.header-logo-image {
+  width: 32px;
+  height: 32px;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+.logo-name {
+  color: #2563EB;
+
+  font-size: 26px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.8px;
+
+  line-height: 1;
+
+  text-decoration: none !important;
 }
 
 .logo-box {
@@ -31,11 +64,13 @@
   font-weight: 900;
 }
 
-.logo-name {
-  color: #2563EB;
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
+.google-icon {
+  width: 20px;
+  height: 20px;
+
+  object-fit: contain;
+
+  display: block;
 }
 
 .location-wrapper {
@@ -358,15 +393,6 @@
   display: flex;
   align-items: center;
   gap: 7px;
-}
-
-.header-logo-image {
-  width: 32px;
-  height: 32px;
-
-  object-fit: contain;
-
-  display: block;
 }
 
 .logo-name {

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import logo from "../assets/listo_logo.png";
+import { Link } from "react-router-dom";
 function Header() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -70,8 +71,11 @@ function Header() {
     ========================= */
 
     React.createElement(
-      "div",
-      { className: "header-logo" },
+      Link,
+      {
+        to: "/",
+        className: "header-logo",
+      },
 
       React.createElement("img", {
         src: logo,
@@ -206,7 +210,7 @@ function Header() {
     React.createElement(
       "a",
       {
-        href: "#login",
+        href: "/login",
         className: "header-login",
       },
       "Login"

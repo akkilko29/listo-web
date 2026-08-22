@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import googleLogo from "../assets/google-icon.png";
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -146,7 +146,7 @@ function Login() {
           React.createElement(
             "a",
             {
-              href: "#forgot-password",
+              href: "/forgot-password",
               className: "forgot-password",
             },
             "Forgot password?"
@@ -191,11 +191,11 @@ function Login() {
           className: "google-button",
         },
 
-        React.createElement(
-          "span",
-          { className: "google-icon" },
-          "G"
-        ),
+        React.createElement("img", {
+          src: googleLogo,
+          alt: "Google",
+          className: "google-icon",
+        }),
 
         React.createElement(
           "span",
@@ -215,7 +215,7 @@ function Login() {
         React.createElement(
           "a",
           {
-            href: "#register",
+            href: "/register",
           },
           "Register"
         )
