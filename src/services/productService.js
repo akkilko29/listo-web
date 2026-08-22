@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "../config/apiConfig";
-import { apiGet } from "./httpClient";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPostForm, apiPut } from "./httpClient";
 import {
   filterProducts,
   mapProduct,
@@ -134,4 +134,55 @@ export async function getProductById(id) {
 
   const products = await getProducts();
   return products.find((product) => String(product.id) === String(id)) || null;
+}
+
+function toProductPayload(input) {
+  return {
+    title: String(input.title || "").trim(),
+    description: String(input.description || "").trim(),
+    price: Number(input.price),
+    condition: String(input.condition || "GOOD").trim(),
+    city: String(input.city || "").trim(),
+    state: String(input.state || "").trim(),
+    categoryId: Number(input.categoryId),
+    subCategoryId: Number(input.subCategoryId),
+    attributes: (input.attributes || [])
+      .filter((item) => item.attributeId && String(item.value || "").trim())
+      .map((item) => ({
+        attributeId: Number(item.attributeId),
+        value: String(item.value).trim(),
+      })),
+  };
+}
+
+export async function createProduct(input) {
+  const data = await apiPost(API_ENDPOINTS.products, toProductPayload(input));
+  return mapProduct(data.data || data);
+}
+
+export async function updateProduct(id, input) {
+  const data = await apiPut(
+    API_ENDPOINTS.productById(id),
+    toProductPayload(input)
+  );
+  return mapProduct(data.data || data);
+}
+
+export async function uploadProductImage(productId, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const data = await apiPostForm(
+    API_ENDPOINTS.productImagesUpload(productId),
+    formData
+  );
+  return data;
+}
+
+export async function markProductSold(id) {
+  const data = await apiPatch(API_ENDPOINTS.productSold(id));
+  return data ? mapProduct(data.data || data) : null;
+}
+
+export async function deleteProduct(id) {
+  await apiDelete(API_ENDPOINTS.productById(id));
 }

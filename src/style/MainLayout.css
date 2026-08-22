@@ -14,6 +14,7 @@
 }
 
 .chat-layout .page-content {
+  flex: 1;
   min-height: 0;
   overflow: hidden;
   display: flex;
@@ -22,4 +23,6 @@
 
 .chat-layout .footer {
   flex-shrink: 0;
+  max-height: 28vh;
+  overflow-y: auto;
 }

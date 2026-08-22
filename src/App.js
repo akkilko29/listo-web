@@ -16,6 +16,7 @@ import ProductListing from "./pages/ProductListing";
 import AddProduct from "./pages/AddProduct";
 import Wishlist from "./pages/Wishlist";
 import Chat from "./pages/Chat";
+import MyListings from "./pages/MyListings";
 
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -79,6 +80,14 @@ function App() {
           React.createElement(Route, {
             path: "/add-product",
             element: React.createElement(AddProduct),
+          }),
+          React.createElement(Route, {
+            path: "/add-product/:id",
+            element: React.createElement(AddProduct),
+          }),
+          React.createElement(Route, {
+            path: "/my-listings",
+            element: React.createElement(MyListings),
           }),
           React.createElement(Route, {
             path: "/wishlist",

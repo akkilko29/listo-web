@@ -2,14 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { getProductById, getProducts } from "../services/productService";
+import {
+  deleteProduct,
+  getProductById,
+  getProducts,
+  markProductSold,
+} from "../services/productService";
 import {
   getFavoriteStatus,
   isFavorite,
   toggleFavorite,
 } from "../services/favoriteService";
 import OfferModal, { buildOfferMessage } from "../components/OfferModal";
-import { startConversation, sendConversationMessage } from "../services/conversationService";
+import {
+  getCurrentUserId,
+  sendConversationMessage,
+  startConversation,
+} from "../services/conversationService";
 import "../style/ProductDetails.css";
 
 function ProductDetails() {
@@ -28,6 +37,7 @@ function ProductDetails() {
   const [chatError, setChatError] = useState("");
   const [offerOpen, setOfferOpen] = useState(false);
   const [offerSubmitting, setOfferSubmitting] = useState(false);
+  const [ownerPending, setOwnerPending] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -172,6 +182,45 @@ function ProductDetails() {
     }
   };
 
+  const handleMarkSold = async () => {
+    if (ownerPending) {
+      return;
+    }
+
+    setOwnerPending("sold");
+    setChatError("");
+
+    try {
+      const updated = await markProductSold(product.id);
+      if (updated) {
+        setProduct(updated);
+      } else {
+        setProduct((current) => ({ ...current, sold: true, status: "SOLD" }));
+      }
+    } catch (err) {
+      setChatError(err.message || "Unable to mark as sold");
+    } finally {
+      setOwnerPending("");
+    }
+  };
+
+  const handleDeleteListing = async () => {
+    if (ownerPending || !window.confirm("Delete this listing?")) {
+      return;
+    }
+
+    setOwnerPending("delete");
+    setChatError("");
+
+    try {
+      await deleteProduct(product.id);
+      navigate("/my-listings");
+    } catch (err) {
+      setChatError(err.message || "Unable to delete listing");
+      setOwnerPending("");
+    }
+  };
+
   if (loading) {
     return React.createElement(
       "div",
@@ -193,6 +242,10 @@ function ProductDetails() {
   }
 
   const images = product.images.length > 0 ? product.images : [];
+  const isOwner =
+    isAuthenticated &&
+    product.sellerId &&
+    String(product.sellerId) === getCurrentUserId();
 
   return React.createElement(
     "div",
@@ -399,17 +452,56 @@ function ProductDetails() {
             "button",
             {
               type: "button",
-              className: "chat-seller-button",
-              onClick: handleChat,
-              disabled: chatPending,
+              className: isOwner ? "offer-button" : "chat-seller-button",
+              onClick: isOwner
+                ? () => navigate(`/add-product/${product.id}`)
+                : handleChat,
+              disabled: !isOwner && chatPending,
             },
 
-            React.createElement("i", { className: "fa-regular fa-message" }),
+            React.createElement("i", {
+              className: isOwner
+                ? "fa-solid fa-pen"
+                : "fa-regular fa-message",
+            }),
 
-            chatPending ? "STARTING CHAT..." : "CHAT WITH SELLER"
+            isOwner
+              ? "EDIT LISTING"
+              : chatPending
+                ? "STARTING CHAT..."
+                : "CHAT WITH SELLER"
           ),
 
-          !product.sold &&
+          isOwner &&
+            !product.sold &&
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "offer-button",
+                onClick: handleMarkSold,
+                disabled: ownerPending === "sold",
+              },
+              React.createElement("i", { className: "fa-solid fa-check" }),
+              ownerPending === "sold" ? "UPDATING..." : "MARK AS SOLD"
+            ),
+
+          isOwner &&
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "offer-button",
+                onClick: handleDeleteListing,
+                disabled: ownerPending === "delete",
+                style: { color: "#d44949", borderColor: "#f1c4c4" },
+              },
+              React.createElement("i", { className: "fa-solid fa-trash" }),
+              ownerPending === "delete" ? "DELETING..." : "DELETE LISTING"
+            ),
+
+          !isOwner &&
+            !product.sold &&
             React.createElement(
               "button",
               {

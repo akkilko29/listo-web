@@ -541,6 +541,10 @@ function Header() {
             {
               type: "button",
               className: "profile-menu-item",
+              onClick: () => {
+                setProfileOpen(false);
+                navigate("/my-listings");
+              },
             },
 
             React.createElement("i", {
@@ -666,7 +670,7 @@ function Header() {
     React.createElement(
       Link,
       {
-        to: "/add-product",
+        to: isAuthenticated ? "/add-product" : "/login",
         className: "sell-button",
       },
 

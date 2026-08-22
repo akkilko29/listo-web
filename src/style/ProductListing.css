@@ -408,6 +408,35 @@
   font-size: 12px;
 }
 
+.owner-listing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.owner-listing-actions button {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #dce3e3;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0F172A;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.owner-listing-actions button:hover {
+  border-color: #2563EB;
+  color: #2563EB;
+}
+
+.owner-listing-actions button.danger {
+  color: #d44949;
+  border-color: #f1c4c4;
+}
+
 .listing-pagination {
   display: flex;
   align-items: center;
