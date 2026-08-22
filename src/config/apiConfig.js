@@ -49,6 +49,15 @@ export const API_ENDPOINTS = {
     `/api/categories/${categoryId}/attributes/${attributeId}`,
   subcategoryAttributes: (categoryId, subCategoryId) =>
     `/api/categories/${categoryId}/subcategories/${subCategoryId}/attributes`,
+  conversations: "/api/conversations",
+  conversationById: (id) => `/api/conversations/${id}`,
+  conversationByProduct: (productId) =>
+    `/api/conversations/product/${productId}`,
+  conversationMessages: (id) => `/api/conversations/${id}/messages`,
+  conversationMessageRead: (id) =>
+    `/api/conversations/${id}/messages/read`,
+  conversationUnreadCount: (id) =>
+    `/api/conversations/${id}/messages/unread-count`,
 };
 
 export function resolveMediaUrl(path) {

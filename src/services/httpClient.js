@@ -95,3 +95,7 @@ export function apiPostForm(path, formData) {
 export function apiDelete(path) {
   return request(path, { method: "DELETE" });
 }
+
+export function apiPatch(path, body) {
+  return request(path, { method: "PATCH", body });
+}

@@ -3,12 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { getProductById, getProducts } from "../services/productService";
-import { startChat } from "../services/chatStorage";
 import {
   getFavoriteStatus,
   isFavorite,
   toggleFavorite,
 } from "../services/favoriteService";
+import { startConversation } from "../services/conversationService";
 import "../style/ProductDetails.css";
 
 function ProductDetails() {
@@ -23,6 +23,8 @@ function ProductDetails() {
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [favoritePending, setFavoritePending] = useState(false);
+  const [chatPending, setChatPending] = useState(false);
+  const [chatError, setChatError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -116,21 +118,27 @@ function ProductDetails() {
     }
   };
 
-  const handleChat = () => {
+  const handleChat = async () => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
 
-    const chat = startChat({
-      sellerId: product.sellerId,
-      sellerName: product.sellerName,
-      productId: product.id,
-      productTitle: product.title,
-      productImage: product.image,
-    });
+    if (chatPending) {
+      return;
+    }
 
-    navigate(`/chat?id=${encodeURIComponent(chat.id)}`);
+    setChatPending(true);
+    setChatError("");
+
+    try {
+      const conversation = await startConversation(product.id);
+      navigate(`/chat?id=${encodeURIComponent(conversation.id)}`);
+    } catch (err) {
+      setChatError(err.message || "Unable to start chat");
+    } finally {
+      setChatPending(false);
+    }
   };
 
   if (loading) {
@@ -362,12 +370,20 @@ function ProductDetails() {
               type: "button",
               className: "chat-seller-button",
               onClick: handleChat,
+              disabled: chatPending,
             },
 
             React.createElement("i", { className: "fa-regular fa-message" }),
 
-            "CHAT WITH SELLER"
-          )
+            chatPending ? "STARTING CHAT..." : "CHAT WITH SELLER"
+          ),
+
+          chatError &&
+            React.createElement(
+              "p",
+              { className: "listings-status listings-error" },
+              chatError
+            )
         ),
 
         React.createElement(

@@ -1,8 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { getChats, getChatById, sendMessage } from "../services/chatStorage";
+import {
+  getConversation,
+  getConversationMessages,
+  getConversations,
+  markConversationRead,
+  sendConversationMessage,
+} from "../services/conversationService";
 import "../style/Chat.css";
 
 function Chat() {
@@ -10,15 +16,15 @@ function Chat() {
   const { isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [draft, setDraft] = useState("");
-  const [tick, setTick] = useState(0);
+  const [chats, setChats] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [listLoading, setListLoading] = useState(true);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
-  const chats = useMemo(() => {
-    tick;
-    return getChats();
-  }, [tick]);
-
-  const selectedId = searchParams.get("id") || chats[0]?.id || "";
-  const selected = selectedId ? getChatById(selectedId) : null;
+  const selectedId = searchParams.get("id") || "";
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -26,20 +32,135 @@ function Chat() {
     }
   }, [isAuthenticated, navigate]);
 
+  const loadConversations = async () => {
+    setListLoading(true);
+    setError("");
+
+    try {
+      const items = await getConversations();
+      setChats(items);
+      return items;
+    } catch (err) {
+      setError(err.message || "Unable to load conversations");
+      setChats([]);
+      return [];
+    } finally {
+      setListLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    loadConversations().then((items) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!searchParams.get("id") && items[0]) {
+        setSearchParams({ id: String(items[0].id) }, { replace: true });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !selectedId) {
+      setSelected(null);
+      setMessages([]);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setThreadLoading(true);
+
+    Promise.all([
+      getConversation(selectedId),
+      getConversationMessages(selectedId),
+    ])
+      .then(async ([conversation, nextMessages]) => {
+        if (cancelled) {
+          return;
+        }
+
+        setSelected(conversation);
+        setMessages(nextMessages);
+
+        try {
+          await markConversationRead(selectedId);
+          if (!cancelled) {
+            setChats((current) =>
+              current.map((chat) =>
+                String(chat.id) === String(selectedId)
+                  ? { ...chat, unreadCount: 0 }
+                  : chat
+              )
+            );
+          }
+        } catch {
+          /* unread badge can stay until next refresh */
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || "Unable to load messages");
+          setSelected(null);
+          setMessages([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setThreadLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, selectedId]);
+
   if (!isAuthenticated) {
     return null;
   }
 
-  const handleSend = (event) => {
+  const handleSend = async (event) => {
     event.preventDefault();
-    if (!selected || !draft.trim()) {
+    const text = draft.trim();
+
+    if (!selected || !text || sending) {
       return;
     }
 
-    sendMessage(selected.id, draft);
-    setDraft("");
-    setTick((value) => value + 1);
+    setSending(true);
+
+    try {
+      const message = await sendConversationMessage(selected.id, text);
+      setDraft("");
+
+      if (message) {
+        setMessages((current) => [...current, message]);
+      }
+
+      const items = await getConversations();
+      setChats(items);
+    } catch (err) {
+      setError(err.message || "Unable to send message");
+    } finally {
+      setSending(false);
+    }
   };
+
+  const activeChat =
+    selected ||
+    chats.find((chat) => String(chat.id) === String(selectedId)) ||
+    null;
 
   return React.createElement(
     "div",
@@ -51,7 +172,10 @@ function Chat() {
 
       React.createElement("h2", null, "Chats"),
 
-      chats.length === 0 &&
+      listLoading &&
+        React.createElement("p", { className: "chat-list-empty" }, "Loading chats..."),
+
+      !listLoading && chats.length === 0 &&
         React.createElement(
           "p",
           { className: "chat-list-empty" },
@@ -65,9 +189,9 @@ function Chat() {
             key: chat.id,
             type: "button",
             className: `chat-list-item ${
-              selected?.id === chat.id ? "active" : ""
+              String(activeChat?.id) === String(chat.id) ? "active" : ""
             }`,
-            onClick: () => setSearchParams({ id: chat.id }),
+            onClick: () => setSearchParams({ id: String(chat.id) }),
           },
           chat.productImage
             ? React.createElement("img", {
@@ -77,14 +201,20 @@ function Chat() {
             : React.createElement(
                 "span",
                 { className: "chat-list-fallback" },
-                (chat.sellerName || "S").slice(0, 1)
+                (chat.otherName || "S").slice(0, 1)
               ),
           React.createElement(
             "div",
-            null,
-            React.createElement("strong", null, chat.sellerName),
+            { className: "chat-list-copy" },
+            React.createElement("strong", null, chat.otherName),
             React.createElement("span", null, chat.productTitle)
-          )
+          ),
+          chat.unreadCount > 0 &&
+            React.createElement(
+              "em",
+              { className: "chat-unread-badge" },
+              chat.unreadCount
+            )
         )
       )
     ),
@@ -93,7 +223,10 @@ function Chat() {
       "section",
       { className: "chat-thread" },
 
-      !selected &&
+      error &&
+        React.createElement("p", { className: "chat-error" }, error),
+
+      !activeChat && !listLoading &&
         React.createElement(
           "div",
           { className: "chat-empty" },
@@ -115,7 +248,7 @@ function Chat() {
           )
         ),
 
-      selected &&
+      activeChat &&
         React.createElement(
           React.Fragment,
           null,
@@ -125,14 +258,14 @@ function Chat() {
             React.createElement(
               "div",
               null,
-              React.createElement("strong", null, selected.sellerName),
-              React.createElement("span", null, selected.productTitle)
+              React.createElement("strong", null, activeChat.otherName),
+              React.createElement("span", null, activeChat.productTitle)
             ),
             React.createElement(
               "button",
               {
                 type: "button",
-                onClick: () => navigate(`/product/${selected.productId}`),
+                onClick: () => navigate(`/product/${activeChat.productId}`),
               },
               "View listing"
             )
@@ -140,7 +273,16 @@ function Chat() {
           React.createElement(
             "div",
             { className: "chat-messages" },
-            (selected.messages || []).map((message) =>
+            threadLoading &&
+              React.createElement("p", { className: "chat-list-empty" }, "Loading messages..."),
+            !threadLoading &&
+              messages.length === 0 &&
+              React.createElement(
+                "p",
+                { className: "chat-list-empty" },
+                "No messages yet. Say hello."
+              ),
+            messages.map((message) =>
               React.createElement(
                 "div",
                 {
@@ -161,8 +303,8 @@ function Chat() {
             }),
             React.createElement(
               "button",
-              { type: "submit", disabled: !draft.trim() },
-              "Send"
+              { type: "submit", disabled: !draft.trim() || sending },
+              sending ? "Sending..." : "Send"
             )
           )
         )
