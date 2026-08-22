@@ -16,6 +16,37 @@ export function unwrapList(data) {
   return [];
 }
 
+export function unwrapProductPage(data) {
+  const products = unwrapList(data).map(mapProduct);
+
+  return {
+    products,
+    totalElements: Number(data?.totalElements ?? products.length) || 0,
+    totalPages: Math.max(1, Number(data?.totalPages) || 1),
+    page: Number(data?.number ?? 0) || 0,
+    size: Number(data?.size ?? products.length) || products.length,
+  };
+}
+
+export function splitLocation(location) {
+  const value = String(location || "").trim();
+
+  if (!value) {
+    return { city: "", state: "" };
+  }
+
+  const parts = value.split(",").map((part) => part.trim()).filter(Boolean);
+
+  if (parts.length >= 2) {
+    return {
+      city: parts[0],
+      state: parts.slice(1).join(", "),
+    };
+  }
+
+  return { city: value, state: "" };
+}
+
 export function formatPrice(price) {
   const amount = Number(price);
 

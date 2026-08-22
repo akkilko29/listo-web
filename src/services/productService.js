@@ -1,6 +1,57 @@
 import { API_ENDPOINTS } from "../config/apiConfig";
 import { apiGet } from "./httpClient";
-import { mapProduct, unwrapList } from "../utils/productDisplay";
+import {
+  filterProducts,
+  mapProduct,
+  sortProducts,
+  splitLocation,
+  unwrapList,
+  unwrapProductPage,
+} from "../utils/productDisplay";
+
+const SORT_QUERY = {
+  "Date Published: Newest": "createdAt,desc",
+  "Date Published: Oldest": "createdAt,asc",
+  "Price: Low to High": "price,asc",
+  "Price: High to Low": "price,desc",
+};
+
+function setParam(params, key, value) {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  const text = String(value).trim();
+  if (!text) {
+    return;
+  }
+
+  params.set(key, text);
+}
+
+export function toApiCondition(condition) {
+  if (condition === "Brand New / Unused" || condition === "NEW") {
+    return "NEW";
+  }
+
+  if (condition === "Gently Used" || condition === "USED") {
+    return "USED";
+  }
+
+  return "";
+}
+
+export function fromApiCondition(condition) {
+  if (condition === "NEW") {
+    return "Brand New / Unused";
+  }
+
+  if (condition === "USED") {
+    return "Gently Used";
+  }
+
+  return "Any";
+}
 
 export async function getProducts() {
   const data = await apiGet(API_ENDPOINTS.products);
@@ -8,34 +59,62 @@ export async function getProducts() {
 }
 
 export async function searchProducts(keyword) {
-  const query = String(keyword || "").trim();
+  const page = await filterProductsPage({ keyword, page: 0, size: 50 });
+  return page.products;
+}
 
-  if (!query) {
-    return getProducts();
-  }
+export async function filterProductsPage(options = {}) {
+  const pageIndex = Math.max(0, Number(options.page) || 0);
+  const size = Math.max(1, Number(options.size) || 10);
+  const location = splitLocation(options.location || "");
+  const city = options.city || location.city;
+  const state = options.state || location.state;
+  const params = new URLSearchParams();
 
-  const needle = query.toLowerCase();
-  const matchKeyword = (product) =>
-    `${product.title} ${product.description} ${product.categoryName} ${product.subCategoryName} ${product.location}`
-      .toLowerCase()
-      .includes(needle);
+  setParam(params, "keyword", options.keyword);
+  setParam(params, "categoryId", options.categoryId);
+  setParam(params, "subCategoryId", options.subCategoryId);
+  setParam(params, "minPrice", options.minPrice);
+  setParam(params, "maxPrice", options.maxPrice);
+  setParam(params, "city", city);
+  setParam(params, "state", state);
+  setParam(params, "condition", toApiCondition(options.condition));
+  setParam(params, "sort", SORT_QUERY[options.sort] || options.sort);
+  params.set("page", String(pageIndex));
+  params.set("size", String(size));
+
+  Object.entries(options.attributes || {}).forEach(([slug, value]) => {
+    setParam(params, slug, value);
+  });
 
   try {
-    const params = new URLSearchParams({ keyword: query });
     const data = await apiGet(
-      `${API_ENDPOINTS.productsSearch}?${params.toString()}`
+      `${API_ENDPOINTS.productsFilter}?${params.toString()}`
     );
-    const results = unwrapList(data).map(mapProduct);
-
-    if (results.length === 0) {
-      const products = await getProducts();
-      return products.filter(matchKeyword);
-    }
-
-    return results.some(matchKeyword) ? results.filter(matchKeyword) : results;
+    return unwrapProductPage(data);
   } catch {
     const products = await getProducts();
-    return products.filter(matchKeyword);
+    const filtered = filterProducts(products, {
+      categoryId: options.categoryId,
+      subCategoryId: options.subCategoryId,
+      keyword: options.keyword,
+      location: [city, state].filter(Boolean).join(", "),
+      minPrice: options.minPrice,
+      maxPrice: options.maxPrice,
+      condition: toApiCondition(options.condition),
+      attribute: options.attribute,
+      attributeValue: options.attributeValue,
+    });
+    const sorted = sortProducts(filtered, options.sort);
+    const start = pageIndex * size;
+
+    return {
+      products: sorted.slice(start, start + size),
+      totalElements: sorted.length,
+      totalPages: Math.max(1, Math.ceil(sorted.length / size) || 1),
+      page: pageIndex,
+      size,
+    };
   }
 }
 

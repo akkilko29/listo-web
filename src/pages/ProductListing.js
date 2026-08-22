@@ -1,14 +1,69 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
-import { getProducts, searchProducts } from "../services/productService";
-import { getCategoryAttribute } from "../services/categoryService";
+import {
+  filterProductsPage,
+  fromApiCondition,
+  toApiCondition,
+} from "../services/productService";
+import {
+  getCategories,
+  getCategoryAttributes,
+  getSubcategoriesByCategory,
+  getSubcategoryAttributes,
+} from "../services/categoryService";
 import { isWishlisted, toggleWishlist } from "../services/wishlistStorage";
-import { filterProducts, sortProducts } from "../utils/productDisplay";
 import { useAuth } from "../context/AuthContext";
 import "../style/ProductListing.css";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 10;
+
+const RESERVED_PARAMS = new Set([
+  "keyword",
+  "category",
+  "categoryId",
+  "subcategory",
+  "subCategoryId",
+  "location",
+  "minPrice",
+  "maxPrice",
+  "condition",
+  "sort",
+  "page",
+  "size",
+  "attribute",
+  "attributeId",
+  "attributeValue",
+]);
+
+function getAttributeQuery(searchParams) {
+  const attributes = {};
+
+  searchParams.forEach((value, key) => {
+    if (!RESERVED_PARAMS.has(key) && String(value).trim()) {
+      attributes[key] = value;
+    }
+  });
+
+  const legacySlug = searchParams.get("attribute");
+  const legacyValue = searchParams.get("attributeValue");
+
+  if (legacySlug && legacyValue && !attributes[legacySlug]) {
+    attributes[legacySlug] = legacyValue;
+  }
+
+  return attributes;
+}
+
+function attributeInputType(dataType) {
+  const type = String(dataType || "TEXT").toUpperCase();
+
+  if (type === "NUMBER" || type === "DECIMAL" || type === "INTEGER") {
+    return "number";
+  }
+
+  return "text";
+}
 
 function ProductListing() {
   const [searchParams] = useSearchParams();
@@ -17,85 +72,170 @@ function ProductListing() {
 
   const category = searchParams.get("category") || "All Categories";
   const subcategory = searchParams.get("subcategory");
-  const categoryId = searchParams.get("categoryId");
-  const subCategoryId = searchParams.get("subCategoryId");
+  const categoryId = searchParams.get("categoryId") || "";
+  const subCategoryId = searchParams.get("subCategoryId") || "";
   const keyword = searchParams.get("keyword") || "";
   const locationParam = searchParams.get("location") || "";
-  const attributeId = searchParams.get("attributeId");
-  const attributeSlug = searchParams.get("attribute") || "";
-  const attributeValueParam = searchParams.get("attributeValue") || "";
+  const minPriceParam = searchParams.get("minPrice") || "";
+  const maxPriceParam = searchParams.get("maxPrice") || "";
+  const conditionParam = searchParams.get("condition") || "";
+  const pageNumber = Math.max(1, Number(searchParams.get("page")) || 1);
+  const appliedAttributes = getAttributeQuery(searchParams);
 
   const [sortBy, setSortBy] = useState("Date Published: Newest");
-  const [allProducts, setAllProducts] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [wishlistTick, setWishlistTick] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedAttribute, setSelectedAttribute] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [filterAttributes, setFilterAttributes] = useState([]);
 
   const [filters, setFilters] = useState({
-    category: category,
-    minPrice: searchParams.get("minPrice") || "",
-    maxPrice: searchParams.get("maxPrice") || "",
+    keyword,
+    categoryId,
+    categoryName: category === "All Categories" ? "" : category,
+    subCategoryId,
+    subCategoryName: subcategory || "",
+    minPrice: minPriceParam,
+    maxPrice: maxPriceParam,
     location: locationParam,
-    condition: "Any",
-    attributeValue: attributeValueParam,
+    condition: fromApiCondition(conditionParam),
+    attributes: appliedAttributes,
   });
-
-  useEffect(() => {
-    setFilters((previous) => ({
-      ...previous,
-      category,
-      location: locationParam,
-      minPrice: searchParams.get("minPrice") || "",
-      maxPrice: searchParams.get("maxPrice") || "",
-      attributeValue: attributeValueParam,
-    }));
-  }, [category, locationParam, attributeValueParam, searchParams]);
 
   useEffect(() => {
     let cancelled = false;
 
-    if (!categoryId || !attributeId) {
-      setSelectedAttribute(null);
-      return undefined;
-    }
-
-    getCategoryAttribute(categoryId, attributeId)
-      .then((attribute) => {
+    getCategories()
+      .then((data) => {
         if (!cancelled) {
-          setSelectedAttribute(attribute);
+          setCategories(data.filter((item) => item.active !== false));
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setSelectedAttribute({
-            id: attributeId,
-            name: attributeSlug || "Attribute",
-            slug: attributeSlug,
-            filterable: true,
-            dataType: "TEXT",
-          });
+          setCategories([]);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [categoryId, attributeId, attributeSlug]);
+  }, []);
+
+  useEffect(() => {
+    setFilters((previous) => ({
+      ...previous,
+      keyword,
+      categoryId,
+      categoryName: category === "All Categories" ? "" : category,
+      subCategoryId,
+      subCategoryName: subcategory || "",
+      location: locationParam,
+      minPrice: minPriceParam,
+      maxPrice: maxPriceParam,
+      condition: fromApiCondition(conditionParam),
+      attributes: appliedAttributes,
+    }));
+  }, [
+    keyword,
+    category,
+    categoryId,
+    subcategory,
+    subCategoryId,
+    locationParam,
+    minPriceParam,
+    maxPriceParam,
+    conditionParam,
+    searchParams,
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!filters.categoryId) {
+      setSubcategories([]);
+      return undefined;
+    }
+
+    getSubcategoriesByCategory(filters.categoryId)
+      .then((data) => {
+        if (!cancelled) {
+          setSubcategories(data.filter((item) => item.active !== false));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSubcategories([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filters.categoryId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!filters.categoryId) {
+      setFilterAttributes([]);
+      return undefined;
+    }
+
+    const loader = filters.subCategoryId
+      ? getSubcategoryAttributes(filters.categoryId, filters.subCategoryId)
+      : getCategoryAttributes(filters.categoryId);
+
+    loader
+      .then((data) => {
+        if (cancelled) {
+          return;
+        }
+
+        setFilterAttributes(
+          data
+            .filter((item) => item.active !== false && item.filterable !== false)
+            .sort((left, right) => (left.sortOrder || 0) - (right.sortOrder || 0))
+        );
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFilterAttributes([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filters.categoryId, filters.subCategoryId]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError("");
-    setCurrentPage(1);
 
-    const loader = keyword ? searchProducts(keyword) : getProducts();
-
-    loader
-      .then((products) => {
+    filterProductsPage({
+      keyword,
+      categoryId,
+      subCategoryId,
+      minPrice: minPriceParam,
+      maxPrice: maxPriceParam,
+      location: locationParam,
+      condition: conditionParam,
+      sort: sortBy,
+      page: pageNumber - 1,
+      size: PAGE_SIZE,
+      attributes: appliedAttributes,
+    })
+      .then((page) => {
         if (!cancelled) {
-          setAllProducts(products);
+          setProducts(page.products);
+          setTotalElements(page.totalElements);
+          setTotalPages(page.totalPages);
         }
       })
       .catch((err) => {
@@ -112,49 +252,18 @@ function ProductListing() {
     return () => {
       cancelled = true;
     };
-  }, [keyword]);
-
-  const visibleProducts = useMemo(() => {
-    const conditionFilter =
-      filters.condition === "Brand New / Unused"
-        ? "NEW"
-        : filters.condition === "Any"
-          ? ""
-          : "USED";
-
-    const filtered = filterProducts(allProducts, {
-      categoryId,
-      subCategoryId,
-      keyword,
-      attribute: selectedAttribute,
-      attributeValue: filters.attributeValue,
-      location: filters.location,
-      minPrice: filters.minPrice,
-      maxPrice: filters.maxPrice,
-      condition: conditionFilter,
-    });
-
-    return sortProducts(filtered, sortBy);
   }, [
-    allProducts,
+    keyword,
     categoryId,
     subCategoryId,
-    keyword,
-    selectedAttribute,
-    filters.attributeValue,
-    filters.location,
-    filters.minPrice,
-    filters.maxPrice,
-    filters.condition,
+    minPriceParam,
+    maxPriceParam,
+    locationParam,
+    conditionParam,
+    searchParams,
     sortBy,
+    pageNumber,
   ]);
-
-  const totalPages = Math.max(1, Math.ceil(visibleProducts.length / PAGE_SIZE));
-  const page = Math.min(currentPage, totalPages);
-  const pagedProducts = visibleProducts.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
 
   const handleFilterChange = (name, value) => {
     setFilters((previous) => ({
@@ -163,48 +272,113 @@ function ProductListing() {
     }));
   };
 
+  const handleCategoryChange = (event) => {
+    const nextId = event.target.value;
+    const selected = categories.find((item) => String(item.id) === String(nextId));
+
+    setFilters((previous) => ({
+      ...previous,
+      categoryId: nextId,
+      categoryName: selected?.name || "",
+      subCategoryId: "",
+      subCategoryName: "",
+      attributes: {},
+    }));
+  };
+
+  const handleSubcategoryChange = (event) => {
+    const nextId = event.target.value;
+    const selected = subcategories.find(
+      (item) => String(item.id) === String(nextId)
+    );
+
+    setFilters((previous) => ({
+      ...previous,
+      subCategoryId: nextId,
+      subCategoryName: selected?.name || "",
+      attributes: {},
+    }));
+  };
+
+  const handleAttributeChange = (slug, value) => {
+    setFilters((previous) => ({
+      ...previous,
+      attributes: {
+        ...previous.attributes,
+        [slug]: value,
+      },
+    }));
+  };
+
   const applyFilters = () => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams();
+
+    if (filters.keyword) {
+      params.set("keyword", filters.keyword);
+    }
+
+    if (filters.categoryId) {
+      params.set("categoryId", filters.categoryId);
+      params.set("category", filters.categoryName);
+    }
+
+    if (filters.subCategoryId) {
+      params.set("subCategoryId", filters.subCategoryId);
+      params.set("subcategory", filters.subCategoryName);
+    }
 
     if (filters.location) {
       params.set("location", filters.location);
-    } else {
-      params.delete("location");
     }
 
     if (filters.minPrice) {
       params.set("minPrice", filters.minPrice);
-    } else {
-      params.delete("minPrice");
     }
 
     if (filters.maxPrice) {
       params.set("maxPrice", filters.maxPrice);
-    } else {
-      params.delete("maxPrice");
     }
 
-    if (filters.attributeValue) {
-      params.set("attributeValue", filters.attributeValue);
+    const condition = toApiCondition(filters.condition);
+    if (condition) {
+      params.set("condition", condition);
+    }
+
+    Object.entries(filters.attributes || {}).forEach(([slug, value]) => {
+      if (String(value || "").trim()) {
+        params.set(slug, String(value).trim());
+      }
+    });
+
+    navigate(`/listings?${params.toString()}`);
+  };
+
+  const goToPage = (nextPage) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (nextPage <= 1) {
+      params.delete("page");
     } else {
-      params.delete("attributeValue");
+      params.set("page", String(nextPage));
     }
 
     navigate(`/listings?${params.toString()}`);
-    setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setFilters({
-      category: "All Categories",
+      keyword: "",
+      categoryId: "",
+      categoryName: "",
+      subCategoryId: "",
+      subCategoryName: "",
       minPrice: "",
       maxPrice: "",
       location: "",
       condition: "Any",
-      attributeValue: "",
+      attributes: {},
     });
     navigate("/listings");
-    setCurrentPage(1);
   };
 
   const handleHeartClick = (event, productId) => {
@@ -221,9 +395,7 @@ function ProductListing() {
 
   const heading = keyword
     ? `Results for "${keyword}"`
-    : selectedAttribute?.name
-      ? `${selectedAttribute.name}${filters.attributeValue ? `: ${filters.attributeValue}` : ""}`
-      : subcategory || `${category}${filters.location ? ` in ${filters.location}` : ""}`;
+    : subcategory || category;
 
   return React.createElement(
     "div",
@@ -253,7 +425,7 @@ function ProductListing() {
         React.createElement(
           "span",
           { className: "active-filter-label" },
-          `${visibleProducts.length} listings`
+          `${totalElements} listings`
         ),
 
         keyword &&
@@ -270,20 +442,28 @@ function ProductListing() {
             category
           ),
 
-        selectedAttribute &&
+        subCategoryId &&
           React.createElement(
             "span",
             { className: "filter-chip" },
-            filters.attributeValue
-              ? `${selectedAttribute.name}: ${filters.attributeValue}`
-              : selectedAttribute.name
+            subcategory
           ),
 
-        filters.location &&
+        Object.entries(appliedAttributes).map(([slug, value]) =>
+          React.createElement(
+            "span",
+            { key: slug, className: "filter-chip" },
+            `${
+              filterAttributes.find((item) => item.slug === slug)?.name || slug
+            }: ${value}`
+          )
+        ),
+
+        locationParam &&
           React.createElement(
             "span",
             { className: "filter-chip" },
-            `Location: ${filters.location}`
+            `Location: ${locationParam}`
           )
       ),
 
@@ -329,6 +509,67 @@ function ProductListing() {
               onClick: clearFilters,
             },
             "Clear All"
+          )
+        ),
+
+        React.createElement(
+          "div",
+          { className: "filter-group" },
+
+          React.createElement("label", null, "KEYWORD"),
+
+          React.createElement("input", {
+            type: "text",
+            placeholder: "Search listings",
+            value: filters.keyword,
+            onChange: (event) => handleFilterChange("keyword", event.target.value),
+          })
+        ),
+
+        React.createElement(
+          "div",
+          { className: "filter-group" },
+
+          React.createElement("label", null, "CATEGORY"),
+
+          React.createElement(
+            "select",
+            {
+              value: filters.categoryId,
+              onChange: handleCategoryChange,
+            },
+            React.createElement("option", { value: "" }, "All"),
+            categories.map((item) =>
+              React.createElement(
+                "option",
+                { key: item.id, value: item.id },
+                item.name
+              )
+            )
+          )
+        ),
+
+        React.createElement(
+          "div",
+          { className: "filter-group" },
+
+          React.createElement("label", null, "SUBCATEGORY"),
+
+          React.createElement(
+            "select",
+            {
+              value: filters.subCategoryId,
+              onChange: handleSubcategoryChange,
+              disabled: !filters.categoryId,
+            },
+            React.createElement("option", { value: "" }, "All"),
+            subcategories.map((item) =>
+              React.createElement(
+                "option",
+                { key: item.id, value: item.id },
+                item.name
+              )
+            )
           )
         ),
 
@@ -394,26 +635,38 @@ function ProductListing() {
           )
         ),
 
-        selectedAttribute &&
-          selectedAttribute.filterable !== false &&
+        filterAttributes.map((attribute) =>
           React.createElement(
             "div",
-            { className: "filter-group" },
+            { key: attribute.id || attribute.slug, className: "filter-group" },
 
             React.createElement(
               "label",
               null,
-              String(selectedAttribute.name || "ATTRIBUTE").toUpperCase()
+              String(attribute.name || attribute.slug).toUpperCase()
             ),
 
-            React.createElement("input", {
-              type: selectedAttribute.dataType === "NUMBER" ? "number" : "text",
-              placeholder: `Filter by ${selectedAttribute.name || "value"}`,
-              value: filters.attributeValue,
-              onChange: (event) =>
-                handleFilterChange("attributeValue", event.target.value),
-            })
-          ),
+            String(attribute.dataType || "").toUpperCase() === "BOOLEAN"
+              ? React.createElement(
+                  "select",
+                  {
+                    value: filters.attributes[attribute.slug] || "",
+                    onChange: (event) =>
+                      handleAttributeChange(attribute.slug, event.target.value),
+                  },
+                  React.createElement("option", { value: "" }, "All"),
+                  React.createElement("option", { value: "true" }, "Yes"),
+                  React.createElement("option", { value: "false" }, "No")
+                )
+              : React.createElement("input", {
+                  type: attributeInputType(attribute.dataType),
+                  placeholder: `All ${attribute.name || "values"}`,
+                  value: filters.attributes[attribute.slug] || "",
+                  onChange: (event) =>
+                    handleAttributeChange(attribute.slug, event.target.value),
+                })
+          )
+        ),
 
         React.createElement(
           "div",
@@ -460,19 +713,19 @@ function ProductListing() {
         error &&
           React.createElement("p", { className: "listings-status listings-error" }, error),
 
-        !loading && !error && pagedProducts.length === 0 &&
+        !loading && !error && products.length === 0 &&
           React.createElement(
             "p",
             { className: "listings-status" },
             "No products found."
           ),
 
-        !loading && !error && pagedProducts.length > 0 &&
+        !loading && !error && products.length > 0 &&
           React.createElement(
             "div",
             { className: "results-grid" },
 
-            pagedProducts.map((product) =>
+            products.map((product) =>
               React.createElement(
                 "article",
                 {
@@ -559,7 +812,7 @@ function ProductListing() {
             )
           ),
 
-        !loading && visibleProducts.length > PAGE_SIZE &&
+        !loading && totalPages > 1 &&
           React.createElement(
             "div",
             { className: "listing-pagination" },
@@ -568,24 +821,24 @@ function ProductListing() {
               "button",
               {
                 type: "button",
-                disabled: page === 1,
-                onClick: () => setCurrentPage(page - 1),
+                disabled: pageNumber === 1,
+                onClick: () => goToPage(pageNumber - 1),
               },
               React.createElement("i", {
                 className: "fa-solid fa-chevron-left",
               })
             ),
 
-            Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) =>
+            Array.from({ length: totalPages }, (_, index) => index + 1).map((pageItem) =>
               React.createElement(
                 "button",
                 {
-                  key: pageNumber,
+                  key: pageItem,
                   type: "button",
-                  className: page === pageNumber ? "active" : "",
-                  onClick: () => setCurrentPage(pageNumber),
+                  className: pageNumber === pageItem ? "active" : "",
+                  onClick: () => goToPage(pageItem),
                 },
-                pageNumber
+                pageItem
               )
             ),
 
@@ -593,8 +846,8 @@ function ProductListing() {
               "button",
               {
                 type: "button",
-                disabled: page === totalPages,
-                onClick: () => setCurrentPage(page + 1),
+                disabled: pageNumber === totalPages,
+                onClick: () => goToPage(pageNumber + 1),
               },
               React.createElement("i", {
                 className: "fa-solid fa-chevron-right",

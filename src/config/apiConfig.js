@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
   register: "/api/auth/register",
   products: "/api/products",
   productsSearch: "/api/products/search",
+  productsFilter: "/api/products/filter",
   productById: (id) => `/api/products/${id}`,
   categories: "/api/categories",
   subcategoriesByCategory: (categoryId) =>

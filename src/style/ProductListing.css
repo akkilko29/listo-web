@@ -147,6 +147,11 @@
   font-size: 14px;
 }
 
+.filter-group select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .price-inputs {
   display: grid;
   grid-template-columns: 1fr 1fr;
