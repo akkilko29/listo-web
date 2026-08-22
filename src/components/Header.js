@@ -321,47 +321,13 @@ function Header() {
     ),
 
     /* =========================
-       LOGIN (guests only)
+       AUTH SLOT
+       Guest: Login icon
+       User: circular profile
     ========================= */
 
-    !isAuthenticated &&
-      React.createElement(
-        Link,
-        {
-          to: "/login",
-          className: "header-login",
-        },
-        "Login"
-      ),
-
-    /* =========================
-       SELL
-    ========================= */
-
-    React.createElement(
-      "button",
-      {
-        type: "button",
-        className: "sell-button",
-      },
-
-      React.createElement("i", {
-        className: "fa-solid fa-plus sell-icon",
-      }),
-
-      React.createElement(
-        "span",
-        null,
-        "SELL"
-      )
-    ),
-
-    /* =========================
-       PROFILE (logged-in only)
-    ========================= */
-
-    isAuthenticated &&
-    React.createElement(
+    isAuthenticated
+      ? React.createElement(
       "div",
       {
         className: "profile-wrapper",
@@ -559,6 +525,39 @@ function Header() {
             )
           )
         )
+      )
+      : React.createElement(
+          Link,
+          {
+            to: "/login",
+            className: "header-login",
+          },
+          React.createElement("i", {
+            className: "fa-regular fa-user header-login-icon",
+          }),
+          React.createElement("span", null, "Login")
+        ),
+
+    /* =========================
+       SELL
+    ========================= */
+
+    React.createElement(
+      "button",
+      {
+        type: "button",
+        className: "sell-button",
+      },
+
+      React.createElement("i", {
+        className: "fa-solid fa-plus sell-icon",
+      }),
+
+      React.createElement(
+        "span",
+        null,
+        "SELL"
+      )
     )
   );
 }

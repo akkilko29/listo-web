@@ -275,11 +275,33 @@
 }
 
 .header-login {
+  min-width: 52px;
   color: #0F172A;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: underline;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
   white-space: nowrap;
+}
+
+.header-login:hover,
+.header-login:focus,
+.header-login:active {
+  color: #2563EB;
+  text-decoration: none;
+}
+
+.header-login-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.header-login span {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .sell-button {
