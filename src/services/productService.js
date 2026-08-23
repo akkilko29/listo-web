@@ -163,11 +163,22 @@ export async function getProductById(id) {
 
   try {
     const data = await apiGet(API_ENDPOINTS.productById(id));
-    if (data && (data.id || data.data)) {
-      return mapProduct(data.data || data);
+    const product = data?.data || data;
+    if (product?.id != null) {
+      return mapProduct(product);
     }
   } catch {
-    /* fall back to the products list */
+    /* fall back to the seller's listings, then the public list */
+  }
+
+  try {
+    const mine = await getMyProducts();
+    const owned = mine.find((product) => String(product.id) === String(id));
+    if (owned) {
+      return owned;
+    }
+  } catch {
+    /* ignore and try the public catalog */
   }
 
   const products = await getProducts();

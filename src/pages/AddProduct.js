@@ -148,10 +148,15 @@ function AddProduct() {
 
     let cancelled = false;
     setLoading(true);
+    setError("");
 
     getProductById(id)
       .then((product) => {
-        if (cancelled || !product) {
+        if (cancelled) {
+          return;
+        }
+
+        if (!product) {
           setError("Listing not found");
           return;
         }
@@ -294,6 +299,14 @@ function AddProduct() {
       "main",
       { className: "add-product-page" },
       React.createElement("p", { className: "add-product-status" }, "Loading listing...")
+    );
+  }
+
+  if (isEdit && error && !title) {
+    return React.createElement(
+      "main",
+      { className: "add-product-page" },
+      React.createElement("p", { className: "add-product-error" }, error)
     );
   }
 

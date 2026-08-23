@@ -65,7 +65,7 @@ async function request(path, options = {}) {
   };
 
   const token = getStoredToken();
-  if (token && !headers.Authorization && !isPublicGet(path, options.method)) {
+  if (token && !headers.Authorization) {
     headers.Authorization = `Bearer ${token}`;
   }
 
