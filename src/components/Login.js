@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import googleLogo from "../assets/google-icon.png";
 import { useAuth } from "../context/AuthContext";
+import loginIcon from "../assets/listo_logo.png";
 
 function Login() {
   const navigate = useNavigate();
@@ -39,9 +40,11 @@ function Login() {
       React.createElement(
         "div",
         { className: "login-icon" },
-
-        React.createElement("i", {
-          className: "fa-solid fa-database",
+      
+        React.createElement("img", {
+          src: loginIcon,
+          alt: "Login",
+          className: "login-icon-image",
         })
       ),
 
@@ -90,7 +93,7 @@ function Login() {
             id: "email",
             type: "email",
             value: email,
-            placeholder: "alex.rivera@gmail.com",
+            placeholder: "example@example.com",
             onChange: (event) =>
               setEmail(event.target.value),
             required: true,

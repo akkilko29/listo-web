@@ -7,7 +7,12 @@
   align-items: flex-start;
   padding: 48px 20px;
 }
-
+.login-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
 .register-card {
   width: 460px;
   background: #ffffff;

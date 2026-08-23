@@ -8,7 +8,12 @@
   padding-top: 56px;
   padding-bottom: 56px;
 }
-
+.login-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
 .login-card {
   width: 440px;
   min-height: 480px;

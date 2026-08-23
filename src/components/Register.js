@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import loginIcon from "../assets/listo_logo.png";
 
 function Register() {
   const navigate = useNavigate();
@@ -85,9 +86,12 @@ function Register() {
 
       React.createElement(
         "div",
-        { className: "register-icon" },
-        React.createElement("i", {
-          className: "fa-solid fa-database",
+        { className: "login-icon" },
+      
+        React.createElement("img", {
+          src: loginIcon,
+          alt: "Login",
+          className: "login-icon-image",
         })
       ),
 
@@ -199,7 +203,7 @@ function Register() {
             type: "email",
             value: formData.email,
             onChange: handleChange,
-            placeholder: "alex.rivera@gmail.com",
+            placeholder: "example@example.com",
             required: true,
             autoComplete: "email",
           })

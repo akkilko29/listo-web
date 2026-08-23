@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+import loginIcon from "../assets/listo_logo.png";
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -24,10 +25,12 @@ function ForgotPassword() {
 
       React.createElement(
         "div",
-        { className: "forgot-password-icon" },
-
-        React.createElement("i", {
-          className: "fa-solid fa-lock",
+        { className: "login-icon" },
+      
+        React.createElement("img", {
+          src: loginIcon,
+          alt: "Login",
+          className: "login-icon-image",
         })
       ),
 
@@ -101,7 +104,7 @@ function ForgotPassword() {
               id: "forgotEmail",
               type: "email",
               value: email,
-              placeholder: "alex.rivera@gmail.com",
+              placeholder: "example@example.com",
               onChange: (event) =>
                 setEmail(event.target.value),
               required: true,
