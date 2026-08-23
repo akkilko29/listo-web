@@ -78,7 +78,8 @@ function ProductListing() {
   const categoryId = searchParams.get("categoryId") || "";
   const subCategoryId = searchParams.get("subCategoryId") || "";
   const keyword = searchParams.get("keyword") || "";
-  const locationParam = globalLocation || "";
+  const urlLocation = searchParams.get("location") || "";
+  const locationParam = urlLocation || globalLocation || "";
   const minPriceParam = searchParams.get("minPrice") || "";
   const maxPriceParam = searchParams.get("maxPrice") || "";
   const conditionParam = searchParams.get("condition") || "";
@@ -97,6 +98,7 @@ function ProductListing() {
   const [subcategories, setSubcategories] = useState([]);
   const [filterAttributes, setFilterAttributes] = useState([]);
 
+  const [sortBy, setSortBy] = useState("Date Published: Newest");
   const [filters, setFilters] = useState({
     keyword,
     categoryId,
@@ -147,6 +149,18 @@ function ProductListing() {
       cancelled = true;
     };
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (hydratedLocation.current) {
+      return;
+    }
+
+    hydratedLocation.current = true;
+    const nextLocation = searchParams.get("location") || "";
+    if (nextLocation && nextLocation !== globalLocation) {
+      setLocation(nextLocation);
+    }
+  }, [globalLocation, searchParams, setLocation]);
 
   useEffect(() => {
     setFilters((previous) => ({
@@ -234,44 +248,6 @@ function ProductListing() {
       cancelled = true;
     };
   }, [filters.categoryId, filters.subCategoryId]);
-
-  useEffect(() => {
-    const urlLocation = searchParams.get("location") || "";
-    if (!globalLocation && urlLocation) {
-      setLocation(urlLocation);
-    }
-  }, []);
-
-  useEffect(() => {
-    setFilters((previous) => {
-      const nextLocation = globalLocation || "";
-      if (previous.location === nextLocation) {
-        return previous;
-      }
-
-      return {
-        ...previous,
-        location: nextLocation,
-      };
-    });
-  }, [globalLocation]);
-
-  useEffect(() => {
-    const current = searchParams.get("location") || "";
-    if (current === locationParam) {
-      return undefined;
-    }
-
-    const params = new URLSearchParams(searchParams);
-    if (locationParam) {
-      params.set("location", locationParam);
-    } else {
-      params.delete("location");
-    }
-    params.delete("page");
-    navigate(`/listings?${params.toString()}`, { replace: true });
-    return undefined;
-  }, [locationParam, navigate]);
 
   useEffect(() => {
     let cancelled = false;
