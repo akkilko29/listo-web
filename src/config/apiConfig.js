@@ -35,6 +35,7 @@ export const API_ENDPOINTS = {
   login: "/api/auth/login",
   register: "/api/auth/register",
   usersMe: "/api/users/me",
+  usersMePhoto: "/api/users/me/profile-photo",
   products: "/api/products",
   productsSearch: "/api/products/search",
   productsFilter: "/api/products/filter",

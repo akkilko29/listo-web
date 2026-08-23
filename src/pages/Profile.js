@@ -79,11 +79,13 @@ function field(id, label, value, onChange, options = {}) {
 
 function Profile() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, refreshUser, updateProfile } = useAuth();
+  const { isAuthenticated, user, refreshUser, updateProfile, updateProfilePhoto } =
+    useAuth();
   const [profile, setProfile] = useState(user);
   const [form, setForm] = useState(() => formFromUser(user));
   const [loading, setLoading] = useState(Boolean(isAuthenticated));
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -174,6 +176,37 @@ function Profile() {
     setSuccess("");
   };
 
+  const handlePhotoChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    setUploadingPhoto(true);
+
+    try {
+      const updated = await updateProfilePhoto(file);
+      if (updated) {
+        setProfile(updated);
+        setForm(formFromUser(updated));
+      }
+      setSuccess("Profile photo updated");
+    } catch (err) {
+      setError(err.message || "Unable to update profile photo");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -215,7 +248,27 @@ function Profile() {
           React.createElement(
             "div",
             { className: "profile-page-hero" },
-            React.createElement(ProfileAvatar, { user: profile }),
+            React.createElement(
+              "div",
+              { className: "profile-photo-wrap" },
+              React.createElement(ProfileAvatar, { user: profile }),
+              React.createElement("input", {
+                id: "profile-photo-input",
+                className: "profile-photo-input",
+                type: "file",
+                accept: "image/*",
+                onChange: handlePhotoChange,
+                disabled: uploadingPhoto,
+              }),
+              React.createElement(
+                "label",
+                {
+                  htmlFor: "profile-photo-input",
+                  className: "profile-photo-change",
+                },
+                uploadingPhoto ? "Uploading..." : "Change photo"
+              )
+            ),
             React.createElement(
               "div",
               { className: "profile-page-identity" },
@@ -272,7 +325,7 @@ function Profile() {
               {
                 type: "submit",
                 className: "profile-action-button",
-                disabled: saving,
+                disabled: saving || uploadingPhoto,
               },
               saving ? "SAVING..." : "SAVE CHANGES"
             ),
@@ -282,7 +335,7 @@ function Profile() {
                 type: "button",
                 className: "profile-action-button secondary",
                 onClick: handleReset,
-                disabled: saving,
+                disabled: saving || uploadingPhoto,
               },
               "RESET"
             ),

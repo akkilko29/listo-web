@@ -40,6 +40,16 @@ export function updateCurrentUser({ name, phone, city, state }) {
   }).then(mapUser);
 }
 
+export function uploadProfilePhoto(file) {
+  if (!file) {
+    return Promise.reject(new Error("Please choose a photo"));
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiPostForm(API_ENDPOINTS.usersMePhoto, formData).then(mapUser);
+}
+
 export function registerRequest({
   name,
   email,

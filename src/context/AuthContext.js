@@ -19,6 +19,7 @@ import {
   mapUser,
   registerRequest,
   updateCurrentUser,
+  uploadProfilePhoto,
 } from "../services/authService";
 import { clearFavoriteCache } from "../services/favoriteService";
 
@@ -60,6 +61,20 @@ export function AuthProvider({ children }) {
     }
 
     const me = await updateCurrentUser(payload);
+    if (me) {
+      persistSession(token, me);
+      setUser(me);
+    }
+    return me;
+  }, []);
+
+  const updateProfilePhoto = useCallback(async (file) => {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error("Please log in to update your photo");
+    }
+
+    const me = await uploadProfilePhoto(file);
     if (me) {
       persistSession(token, me);
       setUser(me);
@@ -142,8 +157,9 @@ export function AuthProvider({ children }) {
       logout,
       refreshUser,
       updateProfile,
+      updateProfilePhoto,
     }),
-    [accessToken, user, refreshUser, updateProfile]
+    [accessToken, user, refreshUser, updateProfile, updateProfilePhoto]
   );
 
   return React.createElement(AuthContext.Provider, { value }, children);
