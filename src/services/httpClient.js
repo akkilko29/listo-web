@@ -15,9 +15,14 @@ function isPublicGet(path, method) {
   if (
     /\/favorite/i.test(path) ||
     path.startsWith("/api/products/favorites") ||
-    path.startsWith("/api/products/my")
+    path.startsWith("/api/products/my") ||
+    path.startsWith("/api/users/me")
   ) {
     return false;
+  }
+
+  if (/^\/api\/users\/\d+/.test(path)) {
+    return true;
   }
 
   return PUBLIC_GET_PREFIXES.some((prefix) => path.startsWith(prefix));

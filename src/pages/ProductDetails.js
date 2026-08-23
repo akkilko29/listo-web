@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { resolveMediaUrl } from "../config/apiConfig";
 import { useAuth } from "../context/AuthContext";
 import { listingsHref, useAppLocation } from "../context/LocationContext";
 import {
@@ -15,12 +16,14 @@ import {
   toggleFavorite,
 } from "../services/favoriteService";
 import OfferModal, { buildOfferMessage } from "../components/OfferModal";
+import { getUserById } from "../services/authService";
 import {
   getCurrentUserId,
   sendConversationMessage,
   startConversation,
 } from "../services/conversationService";
 import "../style/ProductDetails.css";
+import "../style/SellerProfile.css";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -40,6 +43,7 @@ function ProductDetails() {
   const [offerOpen, setOfferOpen] = useState(false);
   const [offerSubmitting, setOfferSubmitting] = useState(false);
   const [ownerPending, setOwnerPending] = useState("");
+  const [seller, setSeller] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,6 +114,31 @@ function ProductDetails() {
       cancelled = true;
     };
   }, [id, isAuthenticated]);
+
+  useEffect(() => {
+    if (!product?.sellerId) {
+      setSeller(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    getUserById(product.sellerId)
+      .then((user) => {
+        if (!cancelled) {
+          setSeller(user);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSeller(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [product?.sellerId]);
 
   const handleWishlist = async () => {
     if (!isAuthenticated) {
@@ -248,6 +277,15 @@ function ProductDetails() {
     isAuthenticated &&
     product.sellerId &&
     String(product.sellerId) === getCurrentUserId();
+  const sellerId = seller?.id || product.sellerId;
+  const sellerName = seller?.name || product.sellerName || "Seller";
+  const sellerLocation = [seller?.city, seller?.state].filter(Boolean).join(", ");
+
+  const openSellerProfile = () => {
+    if (sellerId) {
+      navigate(`/seller/${sellerId}`);
+    }
+  };
 
   return React.createElement(
     "div",
@@ -425,19 +463,30 @@ function ProductDetails() {
           React.createElement("h3", null, "Seller Profile"),
 
           React.createElement(
-            "div",
-            { className: "seller-profile" },
+            "button",
+            {
+              type: "button",
+              className: "seller-profile-link",
+              onClick: openSellerProfile,
+              disabled: !sellerId,
+            },
 
-            React.createElement(
-              "div",
-              { className: "seller-initials" },
-              (product.sellerName || "S")
-                .split(" ")
-                .slice(0, 2)
-                .map((part) => part[0])
-                .join("")
-                .toUpperCase()
-            ),
+            seller?.profilePhotoUrl
+              ? React.createElement("img", {
+                  src: resolveMediaUrl(seller.profilePhotoUrl),
+                  alt: sellerName,
+                  className: "seller-photo",
+                })
+              : React.createElement(
+                  "div",
+                  { className: "seller-initials" },
+                  sellerName
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((part) => part[0])
+                    .join("")
+                    .toUpperCase()
+                ),
 
             React.createElement(
               "div",
@@ -446,10 +495,17 @@ function ProductDetails() {
               React.createElement(
                 "div",
                 { className: "seller-name" },
-                React.createElement("strong", null, product.sellerName)
+                React.createElement("strong", null, sellerName),
+                React.createElement("i", {
+                  className: "fa-solid fa-chevron-right",
+                })
               ),
 
-              React.createElement("span", null, product.condition || "Listed on Listo")
+              React.createElement(
+                "span",
+                null,
+                sellerLocation || (sellerId ? "View seller profile" : "Seller")
+              )
             )
           ),
 

@@ -122,8 +122,8 @@ export function mapProduct(product) {
 
   return {
     id: product.id,
-    sellerId: product.sellerId,
-    sellerName: product.sellerName || "Seller",
+    sellerId: product.sellerId || product.userId || product.ownerId || product.seller?.id || "",
+    sellerName: product.sellerName || product.seller?.name || "Seller",
     categoryId: product.categoryId,
     categoryName: product.categoryName || "",
     subCategoryId: product.subCategoryId,

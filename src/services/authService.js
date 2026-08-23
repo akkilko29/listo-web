@@ -31,6 +31,14 @@ export function getCurrentUser() {
   return apiGet(API_ENDPOINTS.usersMe).then(mapUser);
 }
 
+export function getUserById(id) {
+  if (!id) {
+    return Promise.resolve(null);
+  }
+
+  return apiGet(API_ENDPOINTS.userById(id)).then(mapUser);
+}
+
 export function updateCurrentUser({ name, phone, city, state }) {
   return apiPut(API_ENDPOINTS.usersMe, {
     name: String(name || "").trim(),

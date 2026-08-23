@@ -653,23 +653,23 @@ function Header() {
             )
           ),
 
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: "profile-menu-item",
-            },
+          // React.createElement(
+          //   "button",
+          //   {
+          //     type: "button",
+          //     className: "profile-menu-item",
+          //   },
 
-            React.createElement("i", {
-              className: "fa-solid fa-gear",
-            }),
+          //   React.createElement("i", {
+          //     className: "fa-solid fa-gear",
+          //   }),
 
-            React.createElement(
-              "span",
-              null,
-              "Settings"
-            )
-          ),
+          //   React.createElement(
+          //     "span",
+          //     null,
+          //     "Settings"
+          //   )
+          // ),
 
           /* Divider */
 

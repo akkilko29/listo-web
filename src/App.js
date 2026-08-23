@@ -19,6 +19,7 @@ import Wishlist from "./pages/Wishlist";
 import Chat from "./pages/Chat";
 import MyListings from "./pages/MyListings";
 import Profile from "./pages/Profile";
+import SellerProfile from "./pages/SellerProfile";
 
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -41,6 +42,7 @@ import "./style/MegaMenuBar.css";
 import "./style/HeroSection.css";
 import "./style/AddProduct.css";
 import "./style/Profile.css";
+import "./style/SellerProfile.css";
 
 function App() {
   return React.createElement(
@@ -99,6 +101,10 @@ function App() {
           React.createElement(Route, {
             path: "/profile",
             element: React.createElement(Profile),
+          }),
+          React.createElement(Route, {
+            path: "/seller/:id",
+            element: React.createElement(SellerProfile),
           }),
           React.createElement(Route, {
             path: "/wishlist",

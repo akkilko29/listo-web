@@ -1,0 +1,55 @@
+.seller-profile-container {
+  max-width: 980px;
+}
+
+.seller-listings-section {
+  margin-top: 28px;
+}
+
+.seller-listings-title {
+  margin: 0 0 16px;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.seller-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.seller-profile-link:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.seller-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #eff6ff;
+}
+
+.seller-initials {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
