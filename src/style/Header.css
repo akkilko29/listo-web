@@ -476,7 +476,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
 }
 
 .profile-dropdown-avatar {
@@ -492,6 +497,8 @@
   font-size: 16px;
   font-weight: 700;
   border: 1px solid #c7d0d0;
+  object-fit: cover;
+}
   object-fit: cover;
   overflow: hidden;
 }

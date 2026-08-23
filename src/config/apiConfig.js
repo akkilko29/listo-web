@@ -34,6 +34,7 @@ export const API_BASE_URL = getApiBaseUrl();
 export const API_ENDPOINTS = {
   login: "/api/auth/login",
   register: "/api/auth/register",
+  usersMe: "/api/users/me",
   products: "/api/products",
   productsSearch: "/api/products/search",
   productsFilter: "/api/products/filter",

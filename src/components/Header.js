@@ -523,8 +523,15 @@ function Header() {
           /* Profile Header */
 
           React.createElement(
-            "div",
-            { className: "profile-dropdown-header" },
+            "button",
+            {
+              type: "button",
+              className: "profile-dropdown-header",
+              onClick: () => {
+                setProfileOpen(false);
+                navigate("/profile");
+              },
+            },
 
             React.createElement(UserAvatar, {
               user,
@@ -563,6 +570,10 @@ function Header() {
             {
               type: "button",
               className: "profile-menu-item",
+              onClick: () => {
+                setProfileOpen(false);
+                navigate("/profile");
+              },
             },
 
             React.createElement("i", {
