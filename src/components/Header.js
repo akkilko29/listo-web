@@ -310,6 +310,22 @@ function Header() {
             placeholder: "Search city, area...",
             value: locationQuery,
             onChange: (event) => setLocationQuery(event.target.value),
+            onKeyDown: (event) => {
+              if (event.key !== "Enter") {
+                return;
+              }
+
+              event.preventDefault();
+              const typed = locationQuery.trim();
+              if (popularLocations.length > 0) {
+                selectLocation(popularLocations[0]);
+                return;
+              }
+
+              if (typed) {
+                selectLocation(typed);
+              }
+            },
           }),
 
           React.createElement(

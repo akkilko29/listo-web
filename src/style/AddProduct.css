@@ -41,12 +41,16 @@
 /* =========================
    FORM
 ========================= */
+.add-product-actions {
+  display: flex;
+  gap: 20px;
+}
 
 .add-product-form {
   width: 100%;
 
   background: #ffffff;
-
+  padding: 15px;
   border-radius: 12px;
 
   box-shadow:
@@ -344,6 +348,15 @@
 }
 
 .location-input input {
+  width: 100%;
+  padding-left: 40px;
+}
+
+.location-input input[readonly],
+#listing-state[readonly] {
+  background: #f8fafc;
+  cursor: default;
+}
   padding-left: 40px;
 }
 
@@ -353,7 +366,6 @@
 
 .add-product-actions {
   padding: 22px 32px;
-
   display: flex;
 
   justify-content: flex-end;

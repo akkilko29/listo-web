@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+
+import { splitLocation } from "../utils/productDisplay";
 
 export const LOCATION_STORAGE_KEY = "listo.selectedLocation";
 
@@ -27,10 +35,16 @@ export function listingsHref(location, extra = {}) {
   return query ? `/listings?${query}` : "/listings";
 }
 
+export function formatLocationLabel(city, state) {
+  return [String(city || "").trim(), String(state || "").trim()]
+    .filter(Boolean)
+    .join(", ");
+}
+
 export function LocationProvider({ children }) {
   const [location, setLocationState] = useState(() => readStoredLocation());
 
-  const setLocation = (next) => {
+  const setLocation = useCallback((next) => {
     const value = String(next || "").trim();
     setLocationState(value);
 
@@ -43,14 +57,18 @@ export function LocationProvider({ children }) {
     } catch {
       /* ignore storage errors */
     }
-  };
+  }, []);
+
+  const parts = useMemo(() => splitLocation(location), [location]);
 
   const value = useMemo(
     () => ({
       location,
       setLocation,
+      city: parts.city,
+      state: parts.state,
     }),
-    [location]
+    [location, setLocation, parts]
   );
 
   return React.createElement(LocationContext.Provider, { value }, children);

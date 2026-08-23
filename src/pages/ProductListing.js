@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import {
@@ -85,7 +85,7 @@ function ProductListing() {
   const pageNumber = Math.max(1, Number(searchParams.get("page")) || 1);
   const appliedAttributes = getAttributeQuery(searchParams);
 
-  const [sortBy, setSortBy] = useState("Date Published: Newest");
+  const hydratedLocation = useRef(false);
   const [products, setProducts] = useState([]);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -236,6 +236,27 @@ function ProductListing() {
   }, [filters.categoryId, filters.subCategoryId]);
 
   useEffect(() => {
+    const urlLocation = searchParams.get("location") || "";
+    if (!globalLocation && urlLocation) {
+      setLocation(urlLocation);
+    }
+  }, []);
+
+  useEffect(() => {
+    setFilters((previous) => {
+      const nextLocation = globalLocation || "";
+      if (previous.location === nextLocation) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        location: nextLocation,
+      };
+    });
+  }, [globalLocation]);
+
+  useEffect(() => {
     const current = searchParams.get("location") || "";
     if (current === locationParam) {
       return undefined;
@@ -250,7 +271,7 @@ function ProductListing() {
     params.delete("page");
     navigate(`/listings?${params.toString()}`, { replace: true });
     return undefined;
-  }, [locationParam]);
+  }, [locationParam, navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -315,14 +336,13 @@ function ProductListing() {
   const handleLocationFilterChange = (value) => {
     handleFilterChange("location", value);
 
-    const trimmed = String(value || "").trim();
-    const isComplete =
-      !trimmed ||
-      POPULAR_LOCATIONS.includes(trimmed) ||
-      trimmed.includes(",");
+    const complete =
+      !value ||
+      POPULAR_LOCATIONS.includes(value) ||
+      /^[^,]+,\s*[^,]+/.test(value);
 
-    if (isComplete) {
-      setLocation(trimmed);
+    if (complete) {
+      setLocation(value);
     }
   };
 

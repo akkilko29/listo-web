@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { POPULAR_LOCATIONS } from "../data/popularLocations";
+import {
+  formatLocationLabel,
+  useAppLocation,
+} from "../context/LocationContext";
 import {
   getCategories,
   getCategoryAttributes,
@@ -36,6 +39,8 @@ function AddProduct() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { isAuthenticated } = useAuth();
+  const { location: globalLocation, city: headerCity, state: headerState } =
+    useAppLocation();
   const isEdit = Boolean(id);
 
   const [images, setImages] = useState([]);
@@ -49,8 +54,6 @@ function AddProduct() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState("GOOD");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(Boolean(id));
   const [error, setError] = useState("");
@@ -167,8 +170,6 @@ function AddProduct() {
         setCondition(
           product.condition === "USED" ? "GOOD" : product.condition || "GOOD"
         );
-        setCity(product.city || "");
-        setState(product.state || "");
         setCategoryId(product.categoryId ? String(product.categoryId) : "");
         setSubCategoryId(product.subCategoryId ? String(product.subCategoryId) : "");
         setAttributeValues(
@@ -227,12 +228,6 @@ function AddProduct() {
     setAttributeValues({});
   };
 
-  const handleLocationPick = (value) => {
-    const [nextCity, ...rest] = String(value).split(",").map((part) => part.trim());
-    setCity(nextCity || "");
-    setState(rest.join(", "));
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
@@ -247,8 +242,8 @@ function AddProduct() {
       return;
     }
 
-    if (!city || !state) {
-      setError("Please enter both city and state");
+    if (!headerCity || !headerState) {
+      setError("Select a city and state from the header location picker");
       return;
     }
 
@@ -259,8 +254,8 @@ function AddProduct() {
       description,
       price,
       condition,
-      city,
-      state,
+      city: headerCity,
+      state: headerState,
       categoryId,
       subCategoryId,
       attributes: attributes.map((attribute) => ({
@@ -624,7 +619,9 @@ function AddProduct() {
           React.createElement(
             "p",
             { className: "section-description" },
-            "Buyers filter by city and state, so enter both."
+            globalLocation
+              ? `This listing will use ${formatLocationLabel(headerCity, headerState) || globalLocation}. Change it from the header location picker.`
+              : "Choose a city from the header location picker before posting."
           ),
           React.createElement(
             "div",
@@ -634,7 +631,7 @@ function AddProduct() {
               { className: "form-field" },
               React.createElement(
                 "label",
-                { htmlFor: "city" },
+                { htmlFor: "listing-city" },
                 "City ",
                 React.createElement("span", { className: "required" }, "*")
               ),
@@ -643,28 +640,13 @@ function AddProduct() {
                 { className: "location-input" },
                 React.createElement("i", { className: "fa-solid fa-location-dot" }),
                 React.createElement("input", {
-                  id: "city",
+                  id: "listing-city",
                   type: "text",
-                  list: "popular-cities",
-                  value: city,
-                  onChange: (event) => {
-                    const value = event.target.value;
-                    if (value.includes(",")) {
-                      handleLocationPick(value);
-                      return;
-                    }
-                    setCity(value);
-                  },
-                  placeholder: "Hyderabad",
+                  value: headerCity,
+                  readOnly: true,
+                  placeholder: "Select from header",
                   required: true,
-                }),
-                React.createElement(
-                  "datalist",
-                  { id: "popular-cities" },
-                  POPULAR_LOCATIONS.map((item) =>
-                    React.createElement("option", { key: item, value: item })
-                  )
-                )
+                })
               )
             ),
             React.createElement(
@@ -672,16 +654,16 @@ function AddProduct() {
               { className: "form-field" },
               React.createElement(
                 "label",
-                { htmlFor: "state" },
+                { htmlFor: "listing-state" },
                 "State ",
                 React.createElement("span", { className: "required" }, "*")
               ),
               React.createElement("input", {
-                id: "state",
+                id: "listing-state",
                 type: "text",
-                value: state,
-                onChange: (event) => setState(event.target.value),
-                placeholder: "Telangana",
+                value: headerState,
+                readOnly: true,
+                placeholder: "Select from header",
                 required: true,
               })
             )
