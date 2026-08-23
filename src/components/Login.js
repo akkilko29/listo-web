@@ -3,16 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 
 import googleLogo from "../assets/google-icon.png";
 import { useAuth } from "../context/AuthContext";
+import { requestGoogleIdToken } from "../services/googleAuth";
 import loginIcon from "../assets/listo_logo.png";
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -29,6 +31,21 @@ function Login() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError("");
+    setGoogleSubmitting(true);
+
+    try {
+      const idToken = await requestGoogleIdToken();
+      await loginWithGoogle(idToken);
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Google sign-in failed. Please try again.");
+    } finally {
+      setGoogleSubmitting(false);
+    }
+  };
+
   return React.createElement(
     "main",
     { className: "login-page" },
@@ -40,7 +57,6 @@ function Login() {
       React.createElement(
         "div",
         { className: "login-icon" },
-      
         React.createElement("img", {
           src: loginIcon,
           alt: "Login",
@@ -48,11 +64,7 @@ function Login() {
         })
       ),
 
-      React.createElement(
-        "h1",
-        null,
-        "Welcome Back"
-      ),
+      React.createElement("h1", null, "Welcome Back"),
 
       React.createElement(
         "p",
@@ -61,11 +73,7 @@ function Login() {
       ),
 
       error &&
-        React.createElement(
-          "div",
-          { className: "auth-error" },
-          error
-        ),
+        React.createElement("div", { className: "auth-error" }, error),
 
       React.createElement(
         "form",
@@ -77,25 +85,18 @@ function Login() {
         React.createElement(
           "div",
           { className: "form-group" },
-
           React.createElement(
             "label",
             { htmlFor: "email" },
             "Email Address ",
-            React.createElement(
-              "span",
-              { className: "required" },
-              "*"
-            )
+            React.createElement("span", { className: "required" }, "*")
           ),
-
           React.createElement("input", {
             id: "email",
             type: "email",
             value: email,
             placeholder: "example@example.com",
-            onChange: (event) =>
-              setEmail(event.target.value),
+            onChange: (event) => setEmail(event.target.value),
             required: true,
             autoComplete: "email",
           })
@@ -104,46 +105,32 @@ function Login() {
         React.createElement(
           "div",
           { className: "form-group" },
-
           React.createElement(
             "label",
             { htmlFor: "password" },
             "Password ",
-            React.createElement(
-              "span",
-              { className: "required" },
-              "*"
-            )
+            React.createElement("span", { className: "required" }, "*")
           ),
-
           React.createElement(
             "div",
             { className: "password-container" },
-
             React.createElement("input", {
               id: "password",
-              type: showPassword
-                ? "text"
-                : "password",
+              type: showPassword ? "text" : "password",
               value: password,
               placeholder: "••••••••••••",
-              onChange: (event) =>
-                setPassword(event.target.value),
+              onChange: (event) => setPassword(event.target.value),
               required: true,
               autoComplete: "current-password",
             }),
-
             React.createElement(
               "button",
               {
                 type: "button",
                 className: "password-toggle",
-                onClick: () =>
-                  setShowPassword(!showPassword),
-                "aria-label":
-                  "Toggle password visibility",
+                onClick: () => setShowPassword(!showPassword),
+                "aria-label": "Toggle password visibility",
               },
-
               React.createElement("i", {
                 className: showPassword
                   ? "fa-regular fa-eye"
@@ -156,7 +143,6 @@ function Login() {
         React.createElement(
           "div",
           { className: "forgot-container" },
-
           React.createElement(
             Link,
             {
@@ -172,7 +158,7 @@ function Login() {
           {
             type: "submit",
             className: "login-button",
-            disabled: submitting,
+            disabled: submitting || googleSubmitting,
           },
           submitting ? "LOGGING IN..." : "LOG IN"
         )
@@ -181,15 +167,8 @@ function Login() {
       React.createElement(
         "div",
         { className: "login-divider" },
-
         React.createElement("span"),
-
-        React.createElement(
-          "p",
-          null,
-          "OR"
-        ),
-
+        React.createElement("p", null, "OR"),
         React.createElement("span")
       ),
 
@@ -198,34 +177,26 @@ function Login() {
         {
           type: "button",
           className: "google-button",
+          onClick: handleGoogleLogin,
+          disabled: submitting || googleSubmitting,
         },
-
         React.createElement("img", {
           src: googleLogo,
-          alt: "Google",
-          className: "google-icon",
+          alt: "",
+          className: "google-icon-image",
         }),
-
         React.createElement(
           "span",
           null,
-          "Continue with Google"
+          googleSubmitting ? "CONNECTING TO GOOGLE..." : "Continue with Google"
         )
       ),
 
       React.createElement(
         "p",
         { className: "register-text" },
-
         "Don't have an account? ",
-
-        React.createElement(
-          Link,
-          {
-            to: "/register",
-          },
-          "Register"
-        )
+        React.createElement(Link, { to: "/register" }, "Register")
       )
     )
   );

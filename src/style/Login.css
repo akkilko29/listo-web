@@ -199,7 +199,7 @@
   border: 1px solid #dce3e3;
   border-radius: 6px;
   background: #ffffff;
-  color: #0F172A;
+  color: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,10 +213,15 @@
   background: #f8fafa;
 }
 
-.google-icon {
-  color: #4285f4;
-  font-size: 16px;
-  font-weight: 800;
+.google-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.google-icon-image {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
 .register-text {

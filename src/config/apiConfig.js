@@ -34,6 +34,7 @@ export const API_BASE_URL = getApiBaseUrl();
 export const API_ENDPOINTS = {
   login: "/api/auth/login",
   register: "/api/auth/register",
+  authGoogle: "/api/auth/google",
   usersMe: "/api/users/me",
   usersMePhoto: "/api/users/me/profile-photo",
   usersMePassword: "/api/users/me/password",

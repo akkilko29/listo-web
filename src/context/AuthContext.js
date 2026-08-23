@@ -15,6 +15,7 @@ import {
 } from "../services/authStorage";
 import {
   getCurrentUser,
+  googleLoginRequest,
   loginRequest,
   mapUser,
   registerRequest,
@@ -26,7 +27,7 @@ import { clearFavoriteCache } from "../services/favoriteService";
 const AuthContext = createContext(null);
 
 function sessionToken(data) {
-  return data?.accessToken || data?.token || "";
+  return data?.accessToken || data?.token || data?.jwt || "";
 }
 
 export function AuthProvider({ children }) {
@@ -122,6 +123,31 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const loginWithGoogle = useCallback(async (idToken) => {
+    if (!idToken) {
+      throw new Error("Google did not return an ID token");
+    }
+
+    const data = await googleLoginRequest(idToken);
+    const token = sessionToken(data);
+    if (!token) {
+      throw new Error("Google login did not return an access token");
+    }
+
+    applySession(token, mapUser(data.user || data));
+
+    try {
+      const me = await getCurrentUser();
+      if (me) {
+        applySession(token, me);
+      }
+    } catch {
+      /* Google login payload is enough if /me is not ready */
+    }
+
+    return data;
+  }, [applySession]);
+
   const register = async (payload) => {
     const registeredUser = await registerRequest(payload);
     const data = await loginRequest(payload.email, payload.password);
@@ -153,13 +179,14 @@ export function AuthProvider({ children }) {
       user,
       isAuthenticated: Boolean(accessToken && user),
       login,
+      loginWithGoogle,
       register,
       logout,
       refreshUser,
       updateProfile,
       updateProfilePhoto,
     }),
-    [accessToken, user, refreshUser, updateProfile, updateProfilePhoto]
+    [accessToken, user, refreshUser, updateProfile, updateProfilePhoto, loginWithGoogle]
   );
 
   return React.createElement(AuthContext.Provider, { value }, children);

@@ -27,6 +27,10 @@ export function loginRequest(email, password) {
   return apiPost(API_ENDPOINTS.login, { email, password });
 }
 
+export function googleLoginRequest(idToken) {
+  return apiPost(API_ENDPOINTS.authGoogle, { idToken });
+}
+
 export function getCurrentUser() {
   return apiGet(API_ENDPOINTS.usersMe).then(mapUser);
 }

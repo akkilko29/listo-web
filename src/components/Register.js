@@ -441,41 +441,6 @@ function Register() {
       ),
 
       React.createElement(
-        "div",
-        { className: "register-divider" },
-
-        React.createElement("span"),
-
-        React.createElement(
-          "p",
-          null,
-          "OR"
-        ),
-
-        React.createElement("span")
-      ),
-
-      React.createElement(
-        "button",
-        {
-          type: "button",
-          className: "register-google-button",
-        },
-
-        React.createElement(
-          "span",
-          { className: "register-google-icon" },
-          "G"
-        ),
-
-        React.createElement(
-          "span",
-          null,
-          "Sign up with Google"
-        )
-      ),
-
-      React.createElement(
         "p",
         { className: "already-account" },
 
