@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { resolveMediaUrl } from "../config/apiConfig";
 import { useAuth } from "../context/AuthContext";
+import { changePassword } from "../services/authService";
 import "../style/Profile.css";
 
 function getInitials(name) {
@@ -73,6 +74,7 @@ function field(id, label, value, onChange, options = {}) {
       required: Boolean(options.required),
       readOnly: Boolean(options.readOnly),
       disabled: Boolean(options.disabled),
+      autoComplete: options.autoComplete || "off",
     })
   );
 }
@@ -88,6 +90,14 @@ function Profile() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -204,6 +214,61 @@ function Profile() {
       setError(err.message || "Unable to update profile photo");
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const handlePasswordChange = (name) => (event) => {
+    const value = event.target.value;
+    setPasswordForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+    setPasswordSuccess("");
+  };
+
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    const oldPassword = passwordForm.oldPassword;
+    const newPassword = passwordForm.newPassword;
+    const confirmPassword = passwordForm.confirmPassword;
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setPasswordError("Please fill all password fields");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New password and confirm password do not match");
+      return;
+    }
+
+    if (newPassword === oldPassword) {
+      setPasswordError("New password must be different from the current password");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters");
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const message = await changePassword({ oldPassword, newPassword });
+      setPasswordForm({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setPasswordSuccess(message || "Password changed successfully");
+    } catch (err) {
+      setPasswordError(err.message || "Unable to change password");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -347,6 +412,95 @@ function Profile() {
                 onClick: () => navigate("/my-listings"),
               },
               "MY LISTINGS"
+            )
+          )
+        ),
+
+      !loading &&
+        React.createElement(
+          "form",
+          {
+            className: "profile-page-card profile-password-card",
+            onSubmit: handlePasswordSubmit,
+          },
+
+          React.createElement(
+            "div",
+            { className: "profile-password-header" },
+            React.createElement("h2", null, "Change password"),
+            React.createElement(
+              "p",
+              null,
+              "Use your current password to set a new one"
+            )
+          ),
+
+          passwordError &&
+            React.createElement(
+              "div",
+              { className: "profile-page-error profile-inline-message" },
+              passwordError
+            ),
+
+          passwordSuccess &&
+            React.createElement(
+              "div",
+              { className: "profile-page-success profile-inline-message" },
+              passwordSuccess
+            ),
+
+          React.createElement(
+            "div",
+            { className: "profile-form-grid" },
+            field(
+              "profile-old-password",
+              "Current password",
+              passwordForm.oldPassword,
+              handlePasswordChange("oldPassword"),
+              {
+                type: "password",
+                required: true,
+                placeholder: "Current password",
+                autoComplete: "current-password",
+              }
+            ),
+            field(
+              "profile-new-password",
+              "New password",
+              passwordForm.newPassword,
+              handlePasswordChange("newPassword"),
+              {
+                type: "password",
+                required: true,
+                placeholder: "New password",
+                autoComplete: "new-password",
+              }
+            ),
+            field(
+              "profile-confirm-password",
+              "Confirm new password",
+              passwordForm.confirmPassword,
+              handlePasswordChange("confirmPassword"),
+              {
+                type: "password",
+                required: true,
+                placeholder: "Confirm new password",
+                autoComplete: "new-password",
+              }
+            )
+          ),
+
+          React.createElement(
+            "div",
+            { className: "profile-page-actions" },
+            React.createElement(
+              "button",
+              {
+                type: "submit",
+                className: "profile-action-button",
+                disabled: changingPassword,
+              },
+              changingPassword ? "UPDATING..." : "UPDATE PASSWORD"
             )
           )
         )

@@ -253,6 +253,35 @@
   color: #2563eb;
 }
 
+.profile-password-card {
+  margin-top: 20px;
+}
+
+.profile-password-header {
+  padding: 28px 32px 0;
+}
+
+.profile-password-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.profile-password-header p {
+  margin: 6px 0 0;
+  color: #718385;
+  font-size: 14px;
+}
+
+.profile-inline-message {
+  margin: 16px 32px 0;
+}
+
+.profile-form-grid .profile-form-field:first-child {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 640px) {
   .profile-page-hero,
   .profile-detail-grid,

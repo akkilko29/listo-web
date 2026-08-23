@@ -50,6 +50,19 @@ export function uploadProfilePhoto(file) {
   return apiPostForm(API_ENDPOINTS.usersMePhoto, formData).then(mapUser);
 }
 
+export async function changePassword({ oldPassword, newPassword }) {
+  const data = await apiPut(API_ENDPOINTS.usersMePassword, {
+    oldPassword: String(oldPassword || ""),
+    newPassword: String(newPassword || ""),
+  });
+
+  if (typeof data === "string" && data.trim()) {
+    return data.trim();
+  }
+
+  return data?.message || "Password changed successfully";
+}
+
 export function registerRequest({
   name,
   email,

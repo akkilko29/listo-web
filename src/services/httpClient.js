@@ -27,10 +27,17 @@ async function parseError(response, path) {
   let message = `API ${response.status}: ${path}`;
 
   try {
-    const data = await response.json();
-    message = data?.message || data?.error || data?.detail || message;
+    const text = await response.text();
+    if (text.trim()) {
+      try {
+        const data = JSON.parse(text);
+        message = data?.message || data?.error || data?.detail || text.trim();
+      } catch {
+        message = text.trim();
+      }
+    }
   } catch {
-    /* ignore non-JSON error bodies */
+    /* ignore unreadable error bodies */
   }
 
   throw new Error(message);
@@ -54,7 +61,7 @@ async function parseBody(response) {
       return { id: Number(idMatch[1]) };
     }
 
-    return null;
+    return { message: text.trim() };
   }
 }
 
