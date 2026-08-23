@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "../config/apiConfig";
-import { apiGet, apiPost, apiPostForm } from "./httpClient";
+import { apiGet, apiPost, apiPostForm, apiPut } from "./httpClient";
 
 export function mapUser(payload) {
   if (!payload || typeof payload !== "object") {
@@ -29,6 +29,15 @@ export function loginRequest(email, password) {
 
 export function getCurrentUser() {
   return apiGet(API_ENDPOINTS.usersMe).then(mapUser);
+}
+
+export function updateCurrentUser({ name, phone, city, state }) {
+  return apiPut(API_ENDPOINTS.usersMe, {
+    name: String(name || "").trim(),
+    phone: String(phone || "").trim(),
+    city: String(city || "").trim(),
+    state: String(state || "").trim(),
+  }).then(mapUser);
 }
 
 export function registerRequest({

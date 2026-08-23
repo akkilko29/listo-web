@@ -18,6 +18,7 @@ import {
   loginRequest,
   mapUser,
   registerRequest,
+  updateCurrentUser,
 } from "../services/authService";
 import { clearFavoriteCache } from "../services/favoriteService";
 
@@ -45,6 +46,20 @@ export function AuthProvider({ children }) {
     }
 
     const me = await getCurrentUser();
+    if (me) {
+      persistSession(token, me);
+      setUser(me);
+    }
+    return me;
+  }, []);
+
+  const updateProfile = useCallback(async (payload) => {
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error("Please log in to update your profile");
+    }
+
+    const me = await updateCurrentUser(payload);
     if (me) {
       persistSession(token, me);
       setUser(me);
@@ -126,8 +141,9 @@ export function AuthProvider({ children }) {
       register,
       logout,
       refreshUser,
+      updateProfile,
     }),
-    [accessToken, user, refreshUser]
+    [accessToken, user, refreshUser, updateProfile]
   );
 
   return React.createElement(AuthContext.Provider, { value }, children);

@@ -19,6 +19,15 @@ function getInitials(name) {
     .join("");
 }
 
+function formFromUser(user) {
+  return {
+    name: user?.name || "",
+    phone: user?.phone || "",
+    city: user?.city || "",
+    state: user?.state || "",
+  };
+}
+
 function ProfileAvatar({ user }) {
   const [imageFailed, setImageFailed] = useState(false);
   const photoUrl = resolveMediaUrl(user?.profilePhotoUrl);
@@ -43,30 +52,40 @@ function ProfileAvatar({ user }) {
   );
 }
 
-function detailRow(icon, label, value) {
+function field(id, label, value, onChange, options = {}) {
   return React.createElement(
     "div",
-    { className: "profile-detail-row", key: label },
-    React.createElement("i", { className: icon }),
+    { className: "profile-form-field", key: id },
     React.createElement(
-      "div",
-      null,
-      React.createElement("span", { className: "profile-detail-label" }, label),
-      React.createElement(
-        "strong",
-        { className: "profile-detail-value" },
-        value || "—"
-      )
-    )
+      "label",
+      { htmlFor: id },
+      label,
+      options.required
+        ? React.createElement("span", { className: "profile-required" }, " *")
+        : null
+    ),
+    React.createElement("input", {
+      id,
+      type: options.type || "text",
+      value,
+      onChange,
+      placeholder: options.placeholder || "",
+      required: Boolean(options.required),
+      readOnly: Boolean(options.readOnly),
+      disabled: Boolean(options.disabled),
+    })
   );
 }
 
 function Profile() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, refreshUser } = useAuth();
+  const { isAuthenticated, user, refreshUser, updateProfile } = useAuth();
   const [profile, setProfile] = useState(user);
+  const [form, setForm] = useState(() => formFromUser(user));
   const [loading, setLoading] = useState(Boolean(isAuthenticated));
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -85,13 +104,18 @@ function Profile() {
 
     refreshUser()
       .then((me) => {
-        if (!cancelled) {
-          setProfile(me || user);
+        if (cancelled) {
+          return;
         }
+
+        const next = me || user;
+        setProfile(next);
+        setForm(formFromUser(next));
       })
       .catch((err) => {
         if (!cancelled) {
           setProfile(user);
+          setForm(formFromUser(user));
           setError(err.message || "Unable to load profile");
         }
       })
@@ -105,6 +129,50 @@ function Profile() {
       cancelled = true;
     };
   }, [isAuthenticated]);
+
+  const handleChange = (name) => (event) => {
+    const value = event.target.value;
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+    setSuccess("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    const name = form.name.trim();
+    const phone = form.phone.trim();
+    const city = form.city.trim();
+    const state = form.state.trim();
+
+    if (!name || !phone || !city || !state) {
+      setError("Please fill name, phone, city, and state");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const updated = await updateProfile({ name, phone, city, state });
+      setProfile(updated || { ...profile, name, phone, city, state });
+      setForm(formFromUser(updated || { ...form, name, phone, city, state }));
+      setSuccess("Profile updated");
+    } catch (err) {
+      setError(err.message || "Unable to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    setForm(formFromUser(profile));
+    setError("");
+    setSuccess("");
+  };
 
   if (!isAuthenticated) {
     return null;
@@ -124,7 +192,7 @@ function Profile() {
         "div",
         { className: "profile-page-header" },
         React.createElement("h1", null, "My Profile"),
-        React.createElement("p", null, "Your Listo account details")
+        React.createElement("p", null, "View and update your Listo account details")
       ),
 
       loading &&
@@ -133,10 +201,16 @@ function Profile() {
       error &&
         React.createElement("div", { className: "profile-page-error" }, error),
 
+      success &&
+        React.createElement("div", { className: "profile-page-success" }, success),
+
       !loading &&
         React.createElement(
-          "section",
-          { className: "profile-page-card" },
+          "form",
+          {
+            className: "profile-page-card",
+            onSubmit: handleSubmit,
+          },
 
           React.createElement(
             "div",
@@ -165,11 +239,29 @@ function Profile() {
 
           React.createElement(
             "div",
-            { className: "profile-detail-grid" },
-            detailRow("fa-regular fa-envelope", "Email", profile?.email),
-            detailRow("fa-solid fa-phone", "Phone", profile?.phone),
-            detailRow("fa-solid fa-city", "City", profile?.city),
-            detailRow("fa-solid fa-map", "State", profile?.state)
+            { className: "profile-form-grid" },
+            field("profile-email", "Email", profile?.email || "", undefined, {
+              type: "email",
+              readOnly: true,
+              disabled: true,
+            }),
+            field("profile-name", "Full name", form.name, handleChange("name"), {
+              required: true,
+              placeholder: "Your name",
+            }),
+            field("profile-phone", "Phone", form.phone, handleChange("phone"), {
+              type: "tel",
+              required: true,
+              placeholder: "9876543210",
+            }),
+            field("profile-city", "City", form.city, handleChange("city"), {
+              required: true,
+              placeholder: "Patna",
+            }),
+            field("profile-state", "State", form.state, handleChange("state"), {
+              required: true,
+              placeholder: "Bihar",
+            })
           ),
 
           React.createElement(
@@ -178,22 +270,30 @@ function Profile() {
             React.createElement(
               "button",
               {
-                type: "button",
+                type: "submit",
                 className: "profile-action-button",
-                onClick: () => navigate("/my-listings"),
+                disabled: saving,
               },
-              React.createElement("i", { className: "fa-solid fa-box" }),
-              " My Listings"
+              saving ? "SAVING..." : "SAVE CHANGES"
             ),
             React.createElement(
               "button",
               {
                 type: "button",
                 className: "profile-action-button secondary",
-                onClick: () => navigate("/wishlist"),
+                onClick: handleReset,
+                disabled: saving,
               },
-              React.createElement("i", { className: "fa-regular fa-heart" }),
-              " Favorites"
+              "RESET"
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "profile-action-button secondary",
+                onClick: () => navigate("/my-listings"),
+              },
+              "MY LISTINGS"
             )
           )
         )
