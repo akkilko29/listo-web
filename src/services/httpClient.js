@@ -41,12 +41,21 @@ async function parseBody(response) {
     return null;
   }
 
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    return response.json();
+  const text = await response.text();
+  if (!text.trim()) {
+    return null;
   }
 
-  return response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    const idMatch = text.match(/"id"\s*:\s*(\d+)/);
+    if (idMatch) {
+      return { id: Number(idMatch[1]) };
+    }
+
+    return null;
+  }
 }
 
 async function request(path, options = {}) {

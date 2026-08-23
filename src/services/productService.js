@@ -29,13 +29,34 @@ function setParam(params, key, value) {
   params.set(key, text);
 }
 
+const CONDITION_VALUES = ["NEW", "LIKE_NEW", "GOOD", "FAIR", "POOR"];
+
 export function toApiCondition(condition) {
-  if (condition === "Brand New / Unused" || condition === "NEW") {
+  const value = String(condition || "").trim();
+  const upper = value.toUpperCase().replace(/\s+/g, "_");
+
+  if (value === "Brand New / Unused" || value === "Brand New") {
     return "NEW";
   }
 
-  if (condition === "Gently Used" || condition === "USED") {
-    return "USED";
+  if (value === "Like New") {
+    return "LIKE_NEW";
+  }
+
+  if (value === "Gently Used" || value === "USED" || value === "Good") {
+    return "GOOD";
+  }
+
+  if (value === "Fair") {
+    return "FAIR";
+  }
+
+  if (value === "Poor") {
+    return "POOR";
+  }
+
+  if (CONDITION_VALUES.includes(upper)) {
+    return upper;
   }
 
   return "";
@@ -43,11 +64,23 @@ export function toApiCondition(condition) {
 
 export function fromApiCondition(condition) {
   if (condition === "NEW") {
-    return "Brand New / Unused";
+    return "Brand New";
   }
 
-  if (condition === "USED") {
-    return "Gently Used";
+  if (condition === "LIKE_NEW") {
+    return "Like New";
+  }
+
+  if (condition === "GOOD") {
+    return "Good";
+  }
+
+  if (condition === "FAIR") {
+    return "Fair";
+  }
+
+  if (condition === "POOR") {
+    return "Poor";
   }
 
   return "Any";
@@ -160,9 +193,21 @@ function toProductPayload(input) {
   };
 }
 
+function unwrapSavedProduct(data) {
+  const product = data?.data || data;
+  if (!product?.id) {
+    throw new Error("The listing was saved, but no product id was returned.");
+  }
+  try {
+    return mapProduct(product);
+  } catch {
+    return { id: product.id };
+  }
+}
+
 export async function createProduct(input) {
   const data = await apiPost(API_ENDPOINTS.products, toProductPayload(input));
-  return mapProduct(data.data || data);
+  return unwrapSavedProduct(data);
 }
 
 export async function updateProduct(id, input) {
@@ -170,17 +215,26 @@ export async function updateProduct(id, input) {
     API_ENDPOINTS.productById(id),
     toProductPayload(input)
   );
-  return mapProduct(data.data || data);
+  return unwrapSavedProduct(data?.data || data || { id });
+}
+
+export async function uploadProductImages(productId, files) {
+  const uploads = (files || []).filter(Boolean);
+  if (!productId || uploads.length === 0) {
+    return [];
+  }
+
+  const formData = new FormData();
+  uploads.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  return apiPostForm(API_ENDPOINTS.productImagesUpload(productId), formData);
 }
 
 export async function uploadProductImage(productId, file) {
-  const formData = new FormData();
-  formData.append("file", file);
-  const data = await apiPostForm(
-    API_ENDPOINTS.productImagesUpload(productId),
-    formData
-  );
-  return data;
+  const data = await uploadProductImages(productId, file ? [file] : []);
+  return Array.isArray(data) ? data[0] : data;
 }
 
 export async function markProductSold(id) {

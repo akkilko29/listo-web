@@ -100,12 +100,16 @@ function MyListings() {
       React.createElement("h2", { style: { margin: 0, fontSize: 22 } }, "My Listings"),
       React.createElement(
         "button",
-        {
-          type: "button",
-          className: "apply-filter-button",
-          onClick: () => navigate("/add-product"),
-        },
-        "Post new ad"
+        { style: { width: "150px" } },
+        React.createElement(
+          "button",
+          {
+            type: "button",
+            className: "apply-filter-button",
+            onClick: () => navigate("/add-product"),
+          },
+          "Post new ad"
+        )
       )
     ),
     loading &&

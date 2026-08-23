@@ -10,6 +10,7 @@ import {
   markConversationRead,
   sendConversationMessage,
 } from "../services/conversationService";
+import { listingsHref, useAppLocation } from "../context/LocationContext";
 import { getProductById } from "../services/productService";
 import "../style/Chat.css";
 
@@ -20,6 +21,7 @@ function isOfferMessage(text) {
 function Chat() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { location } = useAppLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [draft, setDraft] = useState("");
   const [chats, setChats] = useState([]);
@@ -308,7 +310,7 @@ function Chat() {
             {
               type: "button",
               className: "apply-filter-button",
-              onClick: () => navigate("/listings"),
+              onClick: () => navigate(listingsHref(location)),
             },
             "Browse listings"
           )

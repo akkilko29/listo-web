@@ -15,6 +15,7 @@ import {
 import { isFavorite, ensureFavoritesLoaded, toggleFavorite } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
 import { appendLocationParam, useAppLocation } from "../context/LocationContext";
+import { POPULAR_LOCATIONS } from "../data/popularLocations";
 import "../style/ProductListing.css";
 
 const PAGE_SIZE = 10;
@@ -309,6 +310,20 @@ function ProductListing() {
       ...previous,
       [name]: value,
     }));
+  };
+
+  const handleLocationFilterChange = (value) => {
+    handleFilterChange("location", value);
+
+    const trimmed = String(value || "").trim();
+    const isComplete =
+      !trimmed ||
+      POPULAR_LOCATIONS.includes(trimmed) ||
+      trimmed.includes(",");
+
+    if (isComplete) {
+      setLocation(trimmed);
+    }
   };
 
   const handleCategoryChange = (event) => {
@@ -679,11 +694,20 @@ function ProductListing() {
 
             React.createElement("input", {
               type: "text",
-              placeholder: "City or state",
+              list: "filter-popular-locations",
+              placeholder: "City, State",
               value: filters.location,
               onChange: (event) =>
-                handleFilterChange("location", event.target.value),
+                handleLocationFilterChange(event.target.value),
             }),
+
+            React.createElement(
+              "datalist",
+              { id: "filter-popular-locations" },
+              POPULAR_LOCATIONS.map((item) =>
+                React.createElement("option", { key: item, value: item })
+              )
+            ),
 
             React.createElement("i", {
               className: "fa-solid fa-location-dot",
@@ -730,7 +754,7 @@ function ProductListing() {
 
           React.createElement("label", null, "CONDITION"),
 
-          ["Any", "Brand New / Unused", "Gently Used"].map((option) =>
+          ["Any", "Brand New", "Like New", "Good", "Fair", "Poor"].map((option) =>
             React.createElement(
               "label",
               {

@@ -215,12 +215,17 @@ export function filterProducts(products, filters = {}) {
       return false;
     }
 
-    if (filters.condition === "NEW" && product.condition !== "NEW") {
-      return false;
-    }
+    if (filters.condition && filters.condition !== "Any") {
+      const wanted = String(filters.condition).toUpperCase();
+      const actual = String(product.condition || "").toUpperCase();
 
-    if (filters.condition === "USED" && product.condition === "NEW") {
-      return false;
+      if (wanted === "USED") {
+        if (actual === "NEW" || actual === "LIKE_NEW") {
+          return false;
+        }
+      } else if (wanted !== actual) {
+        return false;
+      }
     }
 
     return true;

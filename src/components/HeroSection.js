@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { listingsHref, useAppLocation } from "../context/LocationContext";
 import { UI_CONFIG } from "../config/uiConfig";
 import { getCategories } from "../services/categoryService";
 import { limitCategories, withCategoryMeta } from "../utils/categoryMeta";
 
 function HeroSection() {
   const navigate = useNavigate();
+  const { location } = useAppLocation();
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -41,12 +43,12 @@ function HeroSection() {
   );
 
   const openCategory = (category) => {
-    const params = new URLSearchParams({
-      category: category.name,
-      categoryId: String(category.id),
-    });
-
-    navigate(`/listings?${params.toString()}`);
+    navigate(
+      listingsHref(location, {
+        category: category.name,
+        categoryId: String(category.id),
+      })
+    );
   };
 
   return React.createElement(

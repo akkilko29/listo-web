@@ -39,7 +39,7 @@ export const API_ENDPOINTS = {
   productsFilter: "/api/products/filter",
   productsMy: "/api/products/my",
   productById: (id) => `/api/products/${id}`,
-  productImagesUpload: (id) => `/api/products/${id}/images/upload`,
+  productImagesUpload: (id) => `/api/products/${id}/images/upload-multiple`,
   productSold: (id) => `/api/products/${id}/sold`,
   productFavorite: (id) => `/api/products/${id}/favorite`,
   productFavorites: "/api/products/favorites",

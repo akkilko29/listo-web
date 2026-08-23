@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { listingsHref, useAppLocation } from "../context/LocationContext";
 import {
   deleteProduct,
   getProductById,
@@ -25,6 +26,7 @@ function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { location } = useAppLocation();
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [product, setProduct] = useState(null);
@@ -264,7 +266,10 @@ function ProductDetails() {
         {
           onClick: () =>
             navigate(
-              `/listings?category=${encodeURIComponent(product.categoryName)}&categoryId=${product.categoryId}`
+              listingsHref(location, {
+                category: product.categoryName,
+                categoryId: String(product.categoryId),
+              })
             ),
           style: { cursor: "pointer" },
         },

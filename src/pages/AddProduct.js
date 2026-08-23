@@ -13,13 +13,15 @@ import {
   createProduct,
   getProductById,
   updateProduct,
-  uploadProductImage,
+  uploadProductImages,
 } from "../services/productService";
 
 const CONDITIONS = [
   { value: "NEW", label: "Brand New" },
+  { value: "LIKE_NEW", label: "Like New" },
   { value: "GOOD", label: "Good" },
-  { value: "USED", label: "Used" },
+  { value: "FAIR", label: "Fair" },
+  { value: "POOR", label: "Poor" },
 ];
 
 function attributeInputType(dataType) {
@@ -157,7 +159,9 @@ function AddProduct() {
         setTitle(product.title || "");
         setDescription(product.description || "");
         setPrice(String(product.priceValue || ""));
-        setCondition(product.condition || "GOOD");
+        setCondition(
+          product.condition === "USED" ? "GOOD" : product.condition || "GOOD"
+        );
         setCity(product.city || "");
         setState(product.state || "");
         setCategoryId(product.categoryId ? String(product.categoryId) : "");
@@ -269,8 +273,8 @@ function AddProduct() {
         .map((image) => image.file)
         .filter(Boolean);
 
-      for (const file of filesToUpload) {
-        await uploadProductImage(saved.id, file);
+      if (filesToUpload.length > 0) {
+        await uploadProductImages(saved.id, filesToUpload);
       }
 
       navigate(`/product/${saved.id}`);

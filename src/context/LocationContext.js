@@ -20,6 +20,13 @@ export function appendLocationParam(params, location) {
   return params;
 }
 
+export function listingsHref(location, extra = {}) {
+  const params = new URLSearchParams(extra);
+  appendLocationParam(params, location);
+  const query = params.toString();
+  return query ? `/listings?${query}` : "/listings";
+}
+
 export function LocationProvider({ children }) {
   const [location, setLocationState] = useState(() => readStoredLocation());
 

@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import logo from "../assets/listo_logo.png";
+import { listingsHref, useAppLocation } from "../context/LocationContext";
 import { UI_CONFIG } from "../config/uiConfig";
 import { getCategories } from "../services/categoryService";
 import { limitCategories } from "../utils/categoryMeta";
 
 function Footer() {
+  const { location } = useAppLocation();
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -104,7 +106,10 @@ function Footer() {
               Link,
               {
                 key: category.id,
-                to: `/listings?category=${encodeURIComponent(category.name)}&categoryId=${category.id}`,
+                to: listingsHref(location, {
+                  category: category.name,
+                  categoryId: String(category.id),
+                }),
               },
               category.name
             )
