@@ -205,6 +205,11 @@ function Header() {
       React.createElement("span", null, label)
     );
 
+  const handleAppDownload = (event) => {
+    event.preventDefault();
+    window.alert("Coming soon");
+  };
+
   const appDownloadButton = (href, iconClass, label) =>
     React.createElement(
       "a",
@@ -213,18 +218,16 @@ function Header() {
         className: "header-app-download",
         target: "_blank",
         rel: "noopener noreferrer",
+        onClick: handleAppDownload,
       },
       React.createElement("i", { className: iconClass }),
       React.createElement("span", null, label)
     );
 
-  const appPlatform = getAppDownloadPlatform();
-  const appDownloadButtonEl =
-    appPlatform === "android"
-      ? appDownloadButton(ANDROID_APP_URL, "fa-brands fa-google-play", "Android")
-      : appPlatform === "ios"
-        ? appDownloadButton(IOS_APP_URL, "fa-brands fa-apple", "iOS")
-        : null;
+  const appDownloadButtonEl = [
+    appDownloadButton(ANDROID_APP_URL, "fa-brands fa-google-play", "Android"),
+    appDownloadButton(IOS_APP_URL, "fa-brands fa-apple", "iOS"),
+  ];
 
   return React.createElement(
     "header",
@@ -459,8 +462,7 @@ function Header() {
        WISHLIST + CHAT
     ========================= */
 
-    appDownloadButtonEl &&
-      React.createElement(
+    React.createElement(
         "div",
         { className: "header-app-downloads" },
         appDownloadButtonEl

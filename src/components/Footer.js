@@ -222,7 +222,9 @@ function Footer() {
         React.createElement(
           "a",
           {
-            href: "#facebook",
+            href: "https://www.facebook.com/people/Listo-Listing/61593867205987/",
+            target: "_blank",
+            rel: "noopener noreferrer",
             "aria-label": "Facebook",
           },
 
@@ -236,7 +238,9 @@ function Footer() {
         React.createElement(
           "a",
           {
-            href: "#x",
+            href: "https://x.com/listolisting",
+            target: "_blank",
+            rel: "noopener noreferrer",
             "aria-label": "X",
           },
 
@@ -250,7 +254,9 @@ function Footer() {
         React.createElement(
           "a",
           {
-            href: "#linkedin",
+            href: "https://www.linkedin.com/company/listo-listing/",
+            target: "_blank",
+            rel: "noopener noreferrer",
             "aria-label": "LinkedIn",
           },
 
@@ -264,7 +270,9 @@ function Footer() {
         React.createElement(
           "a",
           {
-            href: "#instagram",
+            href: "https://www.instagram.com/listolisting/",
+            target: "_blank",
+            rel: "noopener noreferrer",
             "aria-label": "Instagram",
           },
 
