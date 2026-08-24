@@ -3,9 +3,26 @@ import { Link } from "react-router-dom";
 
 import logo from "../assets/listo_logo.png";
 import { listingsHref, useAppLocation } from "../context/LocationContext";
+import { TRENDING_SEARCHES } from "../data/infoPages";
 import { UI_CONFIG } from "../config/uiConfig";
 import { getCategories } from "../services/categoryService";
 import { limitCategories } from "../utils/categoryMeta";
+
+function trendingHref(location, item, categories) {
+  const match = (categories || []).find((category) => {
+    const name = String(category.name || "").toLowerCase();
+    return item.match.some((token) => name.includes(token));
+  });
+
+  if (match) {
+    return listingsHref(location, {
+      category: match.name,
+      categoryId: String(match.id),
+    });
+  }
+
+  return listingsHref(location, { keyword: item.keyword });
+}
 
 function Footer() {
   const { location } = useAppLocation();
@@ -15,15 +32,11 @@ function Footer() {
     let cancelled = false;
 
     const loadCategories = async () => {
-      if (!UI_CONFIG.showFooterCategories) {
-        return;
-      }
-
       try {
         const data = await getCategories();
 
         if (!cancelled) {
-          setCategories(limitCategories(data, UI_CONFIG.footerMaxCategories));
+          setCategories(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         if (!cancelled) {
@@ -38,6 +51,11 @@ function Footer() {
       cancelled = true;
     };
   }, []);
+
+  const popularCategories = limitCategories(
+    categories,
+    UI_CONFIG.footerMaxCategories
+  );
   return React.createElement(
     "footer",
     { className: "footer" },
@@ -59,9 +77,9 @@ function Footer() {
         { className: "footer-brand" },
 
         React.createElement(
-          "a",
+          Link,
           {
-            href: "/",
+            to: "/",
             className: "footer-logo",
           },
 
@@ -101,7 +119,7 @@ function Footer() {
 
           React.createElement("h3", null, "POPULAR CATEGORIES"),
 
-          categories.map((category) =>
+          popularCategories.map((category) =>
             React.createElement(
               Link,
               {
@@ -130,28 +148,15 @@ function Footer() {
           "TRENDING SEARCHES"
         ),
 
-        React.createElement(
-          "a",
-          { href: "#bikes" },
-          "Bikes & Scooters"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#furniture" },
-          "Home Furniture"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#fashion" },
-          "Fashion & Apparel"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#jobs" },
-          "Jobs & Services"
+        TRENDING_SEARCHES.map((item) =>
+          React.createElement(
+            Link,
+            {
+              key: item.label,
+              to: trendingHref(location, item, categories),
+            },
+            item.label
+          )
         )
       ),
 
@@ -169,29 +174,11 @@ function Footer() {
           "ABOUT US"
         ),
 
-        React.createElement(
-          "a",
-          { href: "#support" },
-          "Contact Support"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#safety" },
-          "Safety & Security"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#terms" },
-          "Terms of Use"
-        ),
-
-        React.createElement(
-          "a",
-          { href: "#privacy" },
-          "Privacy Policy"
-        )
+        React.createElement(Link, { to: "/about" }, "About Us"),
+        React.createElement(Link, { to: "/contact" }, "Contact Support"),
+        React.createElement(Link, { to: "/safety" }, "Safety & Security"),
+        React.createElement(Link, { to: "/terms" }, "Terms of Use"),
+        React.createElement(Link, { to: "/privacy" }, "Privacy Policy")
       )
     ),
 

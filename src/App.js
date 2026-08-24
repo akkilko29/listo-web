@@ -20,6 +20,7 @@ import Chat from "./pages/Chat";
 import MyListings from "./pages/MyListings";
 import Profile from "./pages/Profile";
 import SellerProfile from "./pages/SellerProfile";
+import InfoPage from "./pages/InfoPage";
 
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -113,6 +114,26 @@ function App() {
           React.createElement(Route, {
             path: "/chat",
             element: React.createElement(Chat),
+          }),
+          React.createElement(Route, {
+            path: "/about",
+            element: React.createElement(InfoPage, { slug: "about" }),
+          }),
+          React.createElement(Route, {
+            path: "/contact",
+            element: React.createElement(InfoPage, { slug: "contact" }),
+          }),
+          React.createElement(Route, {
+            path: "/safety",
+            element: React.createElement(InfoPage, { slug: "safety" }),
+          }),
+          React.createElement(Route, {
+            path: "/terms",
+            element: React.createElement(InfoPage, { slug: "terms" }),
+          }),
+          React.createElement(Route, {
+            path: "/privacy",
+            element: React.createElement(InfoPage, { slug: "privacy" }),
           })
         ),
 

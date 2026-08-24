@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function TopBar() {
   return React.createElement(
@@ -15,9 +16,9 @@ function TopBar() {
       "div",
       { className: "top-bar-links" },
 
-      React.createElement(
-        "a",
-        { href: "#support" },
+        React.createElement(
+        Link,
+        { to: "/contact" },
         "Help & Support"
       )
     )

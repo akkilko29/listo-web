@@ -412,16 +412,16 @@ function Register() {
             "I accept and agree to the ",
 
             React.createElement(
-              "a",
-              { href: "#terms" },
+              Link,
+              { to: "/terms" },
               "Terms of Service"
             ),
 
             " and ",
 
             React.createElement(
-              "a",
-              { href: "#privacy" },
+              Link,
+              { to: "/privacy" },
               "Privacy Policy"
             ),
 
