@@ -21,6 +21,7 @@ import MyListings from "./pages/MyListings";
 import Profile from "./pages/Profile";
 import SellerProfile from "./pages/SellerProfile";
 import InfoPage from "./pages/InfoPage";
+import Sitemap from "./pages/Sitemap";
 
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -134,6 +135,10 @@ function App() {
           React.createElement(Route, {
             path: "/privacy",
             element: React.createElement(InfoPage, { slug: "privacy" }),
+          }),
+          React.createElement(Route, {
+            path: "/sitemap",
+            element: React.createElement(Sitemap),
           })
         ),
 

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import logo from "../assets/listo_logo.png";
 import { listingsHref, useAppLocation } from "../context/LocationContext";
-import { TRENDING_SEARCHES } from "../data/infoPages";
+import { SOCIAL_LINKS, TRENDING_SEARCHES } from "../data/infoPages";
 import { UI_CONFIG } from "../config/uiConfig";
 import { getCategories } from "../services/categoryService";
 import { limitCategories } from "../utils/categoryMeta";
@@ -178,7 +178,8 @@ function Footer() {
         React.createElement(Link, { to: "/contact" }, "Contact Support"),
         React.createElement(Link, { to: "/safety" }, "Safety & Security"),
         React.createElement(Link, { to: "/terms" }, "Terms of Use"),
-        React.createElement(Link, { to: "/privacy" }, "Privacy Policy")
+        React.createElement(Link, { to: "/privacy" }, "Privacy Policy"),
+        React.createElement(Link, { to: "/sitemap" }, "Sitemap")
       )
     ),
 
@@ -217,68 +218,18 @@ function Footer() {
         "div",
         { className: "footer-social" },
 
-        /* Facebook */
-
-        React.createElement(
-          "a",
-          {
-            href: "https://www.facebook.com/people/Listo-Listing/61593867205987/",
-            target: "_blank",
-            rel: "noopener noreferrer",
-            "aria-label": "Facebook",
-          },
-
-          React.createElement("i", {
-            className: "fa-brands fa-facebook-f",
-          })
-        ),
-
-        /* X */
-
-        React.createElement(
-          "a",
-          {
-            href: "https://x.com/listolisting",
-            target: "_blank",
-            rel: "noopener noreferrer",
-            "aria-label": "X",
-          },
-
-          React.createElement("i", {
-            className: "fa-brands fa-x-twitter",
-          })
-        ),
-
-        /* LinkedIn */
-
-        React.createElement(
-          "a",
-          {
-            href: "https://www.linkedin.com/company/listo-listing/",
-            target: "_blank",
-            rel: "noopener noreferrer",
-            "aria-label": "LinkedIn",
-          },
-
-          React.createElement("i", {
-            className: "fa-brands fa-linkedin-in",
-          })
-        ),
-
-        /* Instagram */
-
-        React.createElement(
-          "a",
-          {
-            href: "https://www.instagram.com/listolisting/",
-            target: "_blank",
-            rel: "noopener noreferrer",
-            "aria-label": "Instagram",
-          },
-
-          React.createElement("i", {
-            className: "fa-brands fa-instagram",
-          })
+        SOCIAL_LINKS.map((item) =>
+          React.createElement(
+            "a",
+            {
+              key: item.href,
+              href: item.href,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              "aria-label": item.ariaLabel,
+            },
+            React.createElement("i", { className: item.iconClass })
+          )
         )
       )
     )

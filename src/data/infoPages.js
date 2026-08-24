@@ -91,6 +91,33 @@ export const INFO_PAGES = {
   },
 };
 
+export const SOCIAL_LINKS = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/people/Listo-Listing/61593867205987/",
+    ariaLabel: "Facebook",
+    iconClass: "fa-brands fa-facebook-f",
+  },
+  {
+    label: "X",
+    href: "https://x.com/listolisting",
+    ariaLabel: "X",
+    iconClass: "fa-brands fa-x-twitter",
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/listo-listing/",
+    ariaLabel: "LinkedIn",
+    iconClass: "fa-brands fa-linkedin-in",
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/listolisting/",
+    ariaLabel: "Instagram",
+    iconClass: "fa-brands fa-instagram",
+  },
+];
+
 export const TRENDING_SEARCHES = [
   {
     label: "Bikes & Scooters",
