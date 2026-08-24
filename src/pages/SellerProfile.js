@@ -48,6 +48,17 @@ function SellerAvatar({ user }) {
   );
 }
 
+function maskPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) {
+    return "";
+  }
+
+  const visible = digits.slice(0, 4);
+  const hiddenCount = Math.max(digits.length - 4, 0);
+  return hiddenCount > 0 ? `${visible}${"x".repeat(hiddenCount)}` : visible;
+}
+
 function detailRow(icon, label, value) {
   return React.createElement(
     "div",
@@ -189,7 +200,11 @@ function SellerProfile() {
             "div",
             { className: "profile-detail-grid" },
             detailRow("fa-regular fa-envelope", "Email", seller.email),
-            detailRow("fa-solid fa-phone", "Phone", seller.phone),
+            detailRow(
+              "fa-solid fa-phone",
+              "Phone",
+              isOwnProfile ? seller.phone : maskPhone(seller.phone)
+            ),
             detailRow("fa-solid fa-city", "City", seller.city),
             detailRow("fa-solid fa-map", "State", seller.state)
           ),
