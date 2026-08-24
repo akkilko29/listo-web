@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 import {
   getCategories,
-  getCategoryAttributes,
   getSubcategoriesByCategory,
   getSubcategoryAttributes,
 } from "../services/categoryService";
@@ -99,12 +98,10 @@ function MegaMenuBar() {
     setDetailsLoading(true);
     setDetailsError("");
     setSelectedSubCategory(null);
+    setAttributes([]);
 
     try {
-      const [nextSubcategories, nextAttributes] = await Promise.all([
-        getSubcategoriesByCategory(category.id),
-        getCategoryAttributes(category.id),
-      ]);
+      const nextSubcategories = await getSubcategoriesByCategory(category.id);
 
       if (requestId !== categoryRequestId.current) {
         return;
@@ -113,7 +110,6 @@ function MegaMenuBar() {
       setSubcategories(
         nextSubcategories.filter((item) => item.active !== false)
       );
-      setAttributes(nextAttributes.filter((item) => item.active !== false));
     } catch (error) {
       if (requestId !== categoryRequestId.current) {
         return;
@@ -136,6 +132,7 @@ function MegaMenuBar() {
 
     const requestId = subcategoryRequestId.current + 1;
     subcategoryRequestId.current = requestId;
+    setAttributes([]);
 
     try {
       const nextAttributes = await getSubcategoryAttributes(
@@ -152,6 +149,8 @@ function MegaMenuBar() {
       if (requestId !== subcategoryRequestId.current) {
         return;
       }
+
+      setAttributes([]);
     }
   };
 
@@ -402,7 +401,7 @@ function MegaMenuBar() {
                             React.createElement(
                               "p",
                               null,
-                              "Hover a category to see its subcategories and filters."
+                              "Hover a category to see its subcategories. Hover a subcategory to see filters."
                             )
                           )
                         )
@@ -448,6 +447,7 @@ function MegaMenuBar() {
                           )
                   ),
 
+                  selectedSubCategory &&
                   attributes.length > 0 &&
                     React.createElement(
                       "div",
@@ -456,9 +456,7 @@ function MegaMenuBar() {
                       React.createElement(
                         "div",
                         { className: "mega-attributes-title" },
-                        selectedSubCategory
-                          ? `${selectedSubCategory.name} filters`
-                          : "Filters"
+                        `${selectedSubCategory.name} filters`
                       ),
 
                       React.createElement(
