@@ -97,6 +97,7 @@ function ProductListing() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [filterAttributes, setFilterAttributes] = useState([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [sortBy, setSortBy] = useState("Date Published: Newest");
   const [filters, setFilters] = useState({
@@ -302,6 +303,28 @@ function ProductListing() {
     pageNumber,
   ]);
 
+  useEffect(() => {
+    if (!filtersOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setFiltersOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [filtersOpen]);
+
   const handleFilterChange = (name, value) => {
     setFilters((previous) => ({
       ...previous,
@@ -404,6 +427,7 @@ function ProductListing() {
     });
 
     navigate(`/listings?${params.toString()}`);
+    setFiltersOpen(false);
   };
 
   const goToPage = (nextPage) => {
@@ -463,6 +487,17 @@ function ProductListing() {
   const heading = keyword
     ? `Results for "${keyword}"`
     : subcategory || category;
+
+  const appliedFilterCount = [
+    keyword,
+    categoryId,
+    subCategoryId,
+    minPriceParam,
+    maxPriceParam,
+    locationParam,
+    conditionParam,
+    ...Object.keys(appliedAttributes),
+  ].filter(Boolean).length;
 
   return React.createElement(
     "div",
@@ -536,48 +571,115 @@ function ProductListing() {
 
       React.createElement(
         "div",
-        { className: "sort-wrapper" },
-
-        React.createElement("span", null, "Sort by:"),
+        { className: "listing-toolbar" },
 
         React.createElement(
-          "select",
+          "button",
           {
-            value: sortBy,
-            onChange: (event) => setSortBy(event.target.value),
+            type: "button",
+            className: "filter-open-button",
+            onClick: () => {
+              setFilters({
+                keyword,
+                categoryId,
+                categoryName: category === "All Categories" ? "" : category,
+                subCategoryId,
+                subCategoryName: subcategory || "",
+                minPrice: minPriceParam,
+                maxPrice: maxPriceParam,
+                location: locationParam,
+                condition: fromApiCondition(conditionParam),
+                attributes: appliedAttributes,
+              });
+              setFiltersOpen(true);
+            },
           },
+          React.createElement("i", { className: "fa-solid fa-sliders" }),
+          "Filters",
+          appliedFilterCount > 0 &&
+            React.createElement(
+              "span",
+              { className: "filter-count-badge" },
+              appliedFilterCount
+            )
+        ),
 
-          React.createElement("option", null, "Date Published: Newest"),
-          React.createElement("option", null, "Date Published: Oldest"),
-          React.createElement("option", null, "Price: Low to High"),
-          React.createElement("option", null, "Price: High to Low")
+        React.createElement(
+          "div",
+          { className: "sort-wrapper" },
+
+          React.createElement("span", null, "Sort by:"),
+
+          React.createElement(
+            "select",
+            {
+              value: sortBy,
+              onChange: (event) => setSortBy(event.target.value),
+            },
+
+            React.createElement("option", null, "Date Published: Newest"),
+            React.createElement("option", null, "Date Published: Oldest"),
+            React.createElement("option", null, "Price: Low to High"),
+            React.createElement("option", null, "Price: High to Low")
+          )
         )
       )
     ),
 
-    React.createElement(
-      "div",
-      { className: "listing-content" },
-
+    filtersOpen &&
       React.createElement(
-        "aside",
-        { className: "filter-sidebar" },
+        "div",
+        {
+          className: "filter-modal-backdrop",
+          onClick: () => setFiltersOpen(false),
+        },
 
         React.createElement(
           "div",
-          { className: "filter-header" },
-
-          React.createElement("h2", null, "Filters"),
+          {
+            className: "filter-modal",
+            role: "dialog",
+            "aria-modal": "true",
+            "aria-labelledby": "listing-filter-title",
+            onClick: (event) => event.stopPropagation(),
+          },
 
           React.createElement(
-            "button",
-            {
-              type: "button",
-              onClick: clearFilters,
-            },
-            "Clear All"
-          )
-        ),
+            "div",
+            { className: "filter-header" },
+
+            React.createElement("h2", { id: "listing-filter-title" }, "Filters"),
+
+            React.createElement(
+              "div",
+              { className: "filter-header-actions" },
+
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "filter-clear-button",
+                  onClick: clearFilters,
+                },
+                "Clear All"
+              ),
+
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "filter-close-button",
+                  "aria-label": "Close filters",
+                  onClick: () => setFiltersOpen(false),
+                },
+                React.createElement("i", { className: "fa-solid fa-xmark" })
+              )
+            )
+          ),
+
+          React.createElement(
+            "div",
+            { className: "filter-modal-body" },
 
         React.createElement(
           "div",
@@ -766,18 +868,28 @@ function ProductListing() {
               React.createElement("span", null, option)
             )
           )
-        ),
+        )
+          ),
 
-        React.createElement(
-          "button",
-          {
-            type: "button",
-            className: "apply-filter-button",
-            onClick: applyFilters,
-          },
-          "APPLY FILTERS"
+          React.createElement(
+            "div",
+            { className: "filter-modal-footer" },
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                className: "apply-filter-button",
+                onClick: applyFilters,
+              },
+              "APPLY FILTERS"
+            )
+          )
         )
       ),
+
+    React.createElement(
+      "div",
+      { className: "listing-content" },
 
       React.createElement(
         "main",
