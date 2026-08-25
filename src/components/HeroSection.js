@@ -61,12 +61,12 @@ function HeroSection() {
       "div",
       { className: "hero-content" },
 
-      React.createElement("h1", null, "What are you looking for today?"),
+      React.createElement("h1", null, "Buy and sell locally on Listo"),
 
       React.createElement(
         "p",
         null,
-        "Browse over 1,50,000+ local verified listings near you"
+        "Find mobiles, bikes, furniture, fashion, jobs and more from verified neighbours near you"
       ),
 
       UI_CONFIG.showHeroCategories &&

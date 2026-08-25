@@ -18,6 +18,7 @@ import { isFavorite, ensureFavoritesLoaded, toggleFavorite } from "../services/f
 import { useAuth } from "../context/AuthContext";
 import { appendLocationParam, useAppLocation } from "../context/LocationContext";
 import { POPULAR_LOCATIONS } from "../data/popularLocations";
+import { applySeo, canonicalPath } from "../seo/applySeo";
 import "../style/ProductListing.css";
 
 const PAGE_SIZE = 10;
@@ -493,6 +494,16 @@ function ProductListing() {
     ? `Results for "${keyword}"`
     : subcategory || category;
 
+  useEffect(() => {
+    const place = locationParam ? ` in ${locationParam}` : " near you";
+    const topic = keyword || subcategory || (category !== "All Categories" ? category : "classifieds");
+    applySeo({
+      title: `${topic} for sale${place} | Listo`,
+      description: `Find ${topic} ads on Listo${place}. Filter by price, condition and category, then chat with local buyers and sellers.`,
+      path: canonicalPath("/listings", `?${searchParams.toString()}`),
+    });
+  }, [heading, keyword, category, subcategory, locationParam, searchParams]);
+
   const appliedFilterCount = [
     keyword,
     categoryId,
@@ -919,6 +930,8 @@ function ProductListing() {
       React.createElement(
         "main",
         { className: "listing-results" },
+
+        React.createElement("h1", { className: "listing-results-title" }, heading),
 
         loading &&
           React.createElement("p", { className: "listings-status" }, "Loading products..."),

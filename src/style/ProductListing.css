@@ -318,6 +318,13 @@
   min-width: 0;
 }
 
+.listing-results-title {
+  margin: 0 0 16px;
+  color: #0F172A;
+  font-size: 22px;
+  font-weight: 800;
+}
+
 .results-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

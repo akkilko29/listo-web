@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+Allow: /listings
+Allow: /product/
+Allow: /seller/
+Allow: /about
+Allow: /contact
+Allow: /safety
+Allow: /terms
+Allow: /privacy
+Allow: /sitemap
+
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /profile
+Disallow: /chat
+Disallow: /wishlist
+Disallow: /my-listings
+Disallow: /add-product
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://listolisting.in/sitemap.xml

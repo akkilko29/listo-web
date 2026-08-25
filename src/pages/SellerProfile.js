@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { getUserById } from "../services/authService";
 import { getCurrentUserId } from "../services/conversationService";
 import { getProducts } from "../services/productService";
+import { applySeo } from "../seo/applySeo";
 import "../style/Profile.css";
 import "../style/TrendingClassifieds.css";
 import "../style/SellerProfile.css";
@@ -142,6 +143,24 @@ function SellerProfile() {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (!seller) {
+      return undefined;
+    }
+
+    const place = [seller.city, seller.state].filter(Boolean).join(", ");
+    applySeo({
+      title: `${seller.name || "Seller"} | Listo classifieds`,
+      description: `View ${seller.name || "this seller"} on Listo${
+        place ? ` in ${place}` : ""
+      }. Browse their local classified listings and chat to buy or sell.`,
+      path: `/seller/${seller.id}`,
+      image: seller.profilePhotoUrl
+        ? resolveMediaUrl(seller.profilePhotoUrl)
+        : undefined,
+    });
+  }, [seller]);
+
   const location = [seller?.city, seller?.state].filter(Boolean).join(", ");
 
   return React.createElement(
@@ -155,7 +174,7 @@ function SellerProfile() {
       React.createElement(
         "div",
         { className: "profile-page-header" },
-        React.createElement("h1", null, "Seller Profile"),
+        React.createElement("h1", null, seller?.name ? `${seller.name} on Listo` : "Seller Profile"),
         React.createElement("p", null, "Public seller information on Listo")
       ),
 

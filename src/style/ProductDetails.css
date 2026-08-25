@@ -152,7 +152,7 @@
   align-items: flex-start;
 }
 
-.product-price-row h1 {
+.product-price-row .product-price {
   margin: 0;
   color: #0F172A;
   font-size: 32px;
@@ -166,7 +166,7 @@
   cursor: pointer;
 }
 
-.product-summary-card h2 {
+.product-summary-card .product-title {
   margin: 8px 0 14px;
   color: #0F172A;
   font-size: 16px;
@@ -409,7 +409,7 @@
     height: 220px;
   }
 
-  .product-price-row h1 {
+  .product-price-row .product-price {
     font-size: 26px;
   }
 

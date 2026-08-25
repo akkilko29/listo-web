@@ -16,6 +16,8 @@ import {
   toggleFavorite,
 } from "../services/favoriteService";
 import OfferModal, { buildOfferMessage } from "../components/OfferModal";
+import { applySeo } from "../seo/applySeo";
+import { absoluteUrl } from "../config/seoConfig";
 import { getUserById } from "../services/authService";
 import {
   getCurrentUserId,
@@ -89,6 +91,49 @@ function ProductDetails() {
       cancelled = true;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!product) {
+      return undefined;
+    }
+
+    const image = product.images?.[0] || product.image || "";
+    const summary = String(product.description || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 160);
+    const locationLabel = product.location || "India";
+    const priceLabel = product.price || "";
+
+    applySeo({
+      title: `${product.title} | Listo`,
+      description:
+        summary ||
+        `${product.title} for sale on Listo in ${locationLabel}. ${priceLabel}`.trim(),
+      path: `/product/${product.id}`,
+      image: image ? resolveMediaUrl(image) : undefined,
+      type: "product",
+      jsonLdId: "listo-jsonld-page",
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: product.title,
+        description: summary || product.title,
+        image: image ? resolveMediaUrl(image) : undefined,
+        category: product.category || undefined,
+        offers: {
+          "@type": "Offer",
+          url: absoluteUrl(`/product/${product.id}`),
+          priceCurrency: "INR",
+          price: product.priceValue || undefined,
+          availability: product.sold
+            ? "https://schema.org/SoldOut"
+            : "https://schema.org/InStock",
+          itemCondition: "https://schema.org/UsedCondition",
+        },
+      },
+    });
+  }, [product]);
 
   useEffect(() => {
     let cancelled = false;
@@ -426,7 +471,7 @@ function ProductDetails() {
             "div",
             { className: "product-price-row" },
 
-            React.createElement("h1", null, product.price),
+            React.createElement("p", { className: "product-price" }, product.price),
 
             React.createElement("i", {
               className: saved ? "fa-solid fa-heart" : "fa-regular fa-heart",
@@ -439,7 +484,7 @@ function ProductDetails() {
             })
           ),
 
-          React.createElement("h2", null, product.title),
+          React.createElement("h1", { className: "product-title" }, product.title),
 
           product.sold &&
             React.createElement("span", { className: "product-sold-label" }, "SOLD"),

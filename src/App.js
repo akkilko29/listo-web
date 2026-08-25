@@ -11,6 +11,7 @@ import { LocationProvider } from "./context/LocationContext";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import AttributionCapture from "./components/AttributionCapture";
+import SeoHead from "./components/SeoHead";
 
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
@@ -63,6 +64,7 @@ function App() {
         null,
 
       React.createElement(AttributionCapture),
+      React.createElement(SeoHead),
 
       React.createElement(
         Routes,
