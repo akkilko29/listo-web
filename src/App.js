@@ -26,6 +26,7 @@ import Sitemap from "./pages/Sitemap";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 
 import "./style/App.css";
 import "./style/MainLayout.css";
@@ -45,6 +46,7 @@ import "./style/HeroSection.css";
 import "./style/AddProduct.css";
 import "./style/Profile.css";
 import "./style/SellerProfile.css";
+import "./style/ResetPassword.css";
 
 function App() {
   return React.createElement(
@@ -160,6 +162,10 @@ function App() {
           React.createElement(Route, {
             path: "/forgot-password",
             element: React.createElement(ForgotPassword),
+          }),
+          React.createElement(Route, {
+            path: "/reset-password",
+            element: React.createElement(ResetPassword),
           })
         )
       )
