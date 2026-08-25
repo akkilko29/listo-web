@@ -10,6 +10,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { LocationProvider } from "./context/LocationContext";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
+import AttributionCapture from "./components/AttributionCapture";
 
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
@@ -60,6 +61,8 @@ function App() {
       React.createElement(
         LocationProvider,
         null,
+
+      React.createElement(AttributionCapture),
 
       React.createElement(
         Routes,

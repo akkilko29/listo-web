@@ -7,10 +7,12 @@ import {
   toApiCondition,
 } from "../services/productService";
 import {
+  attachAttributeOptions,
   getCategories,
   getCategoryAttributes,
   getSubcategoriesByCategory,
   getSubcategoryAttributes,
+  isSelectAttribute,
 } from "../services/categoryService";
 import { isFavorite, ensureFavoritesLoaded, toggleFavorite } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
@@ -229,15 +231,18 @@ function ProductListing() {
 
     loader
       .then((data) => {
+        const next = data
+          .filter((item) => item.active !== false && item.filterable !== false)
+          .sort((left, right) => (left.sortOrder || 0) - (right.sortOrder || 0));
+
+        return attachAttributeOptions(next);
+      })
+      .then((data) => {
         if (cancelled) {
           return;
         }
 
-        setFilterAttributes(
-          data
-            .filter((item) => item.active !== false && item.filterable !== false)
-            .sort((left, right) => (left.sortOrder || 0) - (right.sortOrder || 0))
-        );
+        setFilterAttributes(data);
       })
       .catch(() => {
         if (!cancelled) {
@@ -836,6 +841,26 @@ function ProductListing() {
                   React.createElement("option", { value: "true" }, "Yes"),
                   React.createElement("option", { value: "false" }, "No")
                 )
+              : isSelectAttribute(attribute.dataType)
+                ? React.createElement(
+                    "select",
+                    {
+                      value: filters.attributes[attribute.slug] || "",
+                      onChange: (event) =>
+                        handleAttributeChange(attribute.slug, event.target.value),
+                    },
+                    React.createElement("option", { value: "" }, "All"),
+                    (attribute.options || []).map((option) =>
+                      React.createElement(
+                        "option",
+                        {
+                          key: option.id || option.slug || option.name,
+                          value: option.name || option.slug,
+                        },
+                        option.name || option.slug
+                      )
+                    )
+                  )
               : React.createElement("input", {
                   type: attributeInputType(attribute.dataType),
                   placeholder: `All ${attribute.name || "values"}`,

@@ -1,4 +1,8 @@
 import { API_ENDPOINTS } from "../config/apiConfig";
+import {
+  applyRegistrationAttribution,
+  clearRegistrationAttribution,
+} from "./attributionStorage";
 import { apiGet, apiPost, apiPostForm, apiPut } from "./httpClient";
 
 export function mapUser(payload) {
@@ -28,7 +32,12 @@ export function loginRequest(email, password) {
 }
 
 export function googleLoginRequest(idToken) {
-  return apiPost(API_ENDPOINTS.authGoogle, { idToken });
+  const body = { idToken };
+  applyRegistrationAttribution(body, "google");
+  return apiPost(API_ENDPOINTS.authGoogle, body).then((data) => {
+    clearRegistrationAttribution();
+    return data;
+  });
 }
 
 export function getCurrentUser() {
@@ -96,5 +105,10 @@ export function registerRequest({
     formData.append("profilePhoto", profilePhoto);
   }
 
-  return apiPostForm(API_ENDPOINTS.register, formData);
+  applyRegistrationAttribution(formData, "email");
+
+  return apiPostForm(API_ENDPOINTS.register, formData).then((data) => {
+    clearRegistrationAttribution();
+    return data;
+  });
 }

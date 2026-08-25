@@ -7,10 +7,12 @@ import {
   useAppLocation,
 } from "../context/LocationContext";
 import {
+  attachAttributeOptions,
   getCategories,
   getCategoryAttributes,
   getSubcategoriesByCategory,
   getSubcategoryAttributes,
+  isSelectAttribute,
 } from "../services/categoryService";
 import {
   createProduct,
@@ -33,6 +35,27 @@ function attributeInputType(dataType) {
     return "number";
   }
   return "text";
+}
+
+function attributeOptionValue(option) {
+  return String(option?.name || option?.slug || option?.id || "");
+}
+
+function matchingAttributeValue(attribute, stored) {
+  const raw = String(stored || "");
+  const options = attribute.options || [];
+
+  if (!raw || options.length === 0) {
+    return raw;
+  }
+
+  const match = options.find((option) =>
+    [option.name, option.slug, option.id].some(
+      (part) => part != null && String(part) === raw
+    )
+  );
+
+  return match ? attributeOptionValue(match) : raw;
 }
 
 function AddProduct() {
@@ -123,15 +146,18 @@ function AddProduct() {
 
     loader
       .then((data) => {
+        const next = data
+          .filter((item) => item.active !== false)
+          .sort((left, right) => (left.sortOrder || 0) - (right.sortOrder || 0));
+
+        return attachAttributeOptions(next);
+      })
+      .then((data) => {
         if (cancelled) {
           return;
         }
 
-        setAttributes(
-          data
-            .filter((item) => item.active !== false)
-            .sort((left, right) => (left.sortOrder || 0) - (right.sortOrder || 0))
-        );
+        setAttributes(data);
       })
       .catch(() => {
         if (!cancelled) {
@@ -260,7 +286,9 @@ function AddProduct() {
       subCategoryId,
       attributes: attributes.map((attribute) => ({
         attributeId: attribute.id,
-        value: attributeValues[attribute.id] || "",
+        value: isSelectAttribute(attribute.dataType)
+          ? matchingAttributeValue(attribute, attributeValues[attribute.id])
+          : attributeValues[attribute.id] || "",
       })),
     };
 
@@ -485,7 +513,39 @@ function AddProduct() {
                         React.createElement("option", { value: "true" }, "Yes"),
                         React.createElement("option", { value: "false" }, "No")
                       )
-                    : React.createElement("input", {
+                    : isSelectAttribute(attribute.dataType)
+                      ? React.createElement(
+                          "select",
+                          {
+                            id: `attribute-${attribute.id}`,
+                            value: matchingAttributeValue(
+                              attribute,
+                              attributeValues[attribute.id]
+                            ),
+                            required: Boolean(attribute.required),
+                            onChange: (event) =>
+                              setAttributeValues((previous) => ({
+                                ...previous,
+                                [attribute.id]: event.target.value,
+                              })),
+                          },
+                          React.createElement(
+                            "option",
+                            { value: "" },
+                            `Select ${attribute.name}`
+                          ),
+                          (attribute.options || []).map((option) =>
+                            React.createElement(
+                              "option",
+                              {
+                                key: option.id || option.slug || option.name,
+                                value: attributeOptionValue(option),
+                              },
+                              option.name || option.slug
+                            )
+                          )
+                        )
+                      : React.createElement("input", {
                         id: `attribute-${attribute.id}`,
                         type: attributeInputType(attribute.dataType),
                         value: attributeValues[attribute.id] || "",

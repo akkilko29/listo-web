@@ -7,6 +7,7 @@ const cache = {
   categoryAttributes: {},
   categoryAttributeById: {},
   subcategoryAttributes: {},
+  attributeOptions: {},
 };
 
 function getCacheKey(categoryId, subCategoryId) {
@@ -127,4 +128,48 @@ export async function getSubcategoryAttributes(categoryId, subCategoryId) {
   );
   cache.subcategoryAttributes[key] = unwrapList(data);
   return cache.subcategoryAttributes[key];
+}
+
+export function isSelectAttribute(dataType) {
+  const type = String(dataType || "").toUpperCase();
+  return type === "SELECT" || type === "ENUM" || type === "DROPDOWN";
+}
+
+export async function getCategoryAttributeOptions(attributeId) {
+  if (!attributeId) {
+    return [];
+  }
+
+  if (cache.attributeOptions[attributeId]) {
+    return cache.attributeOptions[attributeId];
+  }
+
+  const data = await apiGet(
+    API_ENDPOINTS.categoryAttributeOptions(attributeId)
+  );
+  const options = unwrapList(data).filter((item) => item.active !== false);
+  cache.attributeOptions[attributeId] = options;
+  return options;
+}
+
+export async function attachAttributeOptions(attributes) {
+  const list = Array.isArray(attributes) ? attributes : [];
+
+  return Promise.all(
+    list.map(async (attribute) => {
+      if (!isSelectAttribute(attribute.dataType)) {
+        return {
+          ...attribute,
+          options: Array.isArray(attribute.options) ? attribute.options : [],
+        };
+      }
+
+      try {
+        const options = await getCategoryAttributeOptions(attribute.id);
+        return { ...attribute, options };
+      } catch {
+        return { ...attribute, options: [] };
+      }
+    })
+  );
 }

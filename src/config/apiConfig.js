@@ -57,6 +57,8 @@ export const API_ENDPOINTS = {
     `/api/categories/${categoryId}/attributes/${attributeId}`,
   subcategoryAttributes: (categoryId, subCategoryId) =>
     `/api/categories/${categoryId}/subcategories/${subCategoryId}/attributes`,
+  categoryAttributeOptions: (attributeId) =>
+    `/api/category-attributes/${attributeId}/options`,
   conversations: "/api/conversations",
   conversationById: (id) => `/api/conversations/${id}`,
   conversationByProduct: (productId) =>
