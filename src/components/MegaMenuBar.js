@@ -10,6 +10,7 @@ import {
   ALL_CATEGORIES_ITEM,
   withCategoryMeta,
 } from "../utils/categoryMeta";
+import { categoryPath, subcategoryPath } from "../seo/seoPaths";
 import { appendLocationParam, useAppLocation } from "../context/LocationContext";
 
 function MegaMenuBar() {
@@ -181,21 +182,22 @@ function MegaMenuBar() {
   };
 
   const goToListings = (category, subCategory) => {
-    const params = new URLSearchParams();
+    setMenuOpen(false);
 
-    if (category && category.id !== ALL_CATEGORIES_ITEM.id) {
-      params.set("category", category.name);
-      params.set("categoryId", String(category.id));
+    if (!category || category.id === ALL_CATEGORIES_ITEM.id) {
+      const params = new URLSearchParams();
+      appendLocationParam(params, location);
+      const query = params.toString();
+      navigate(query ? `/listings?${query}` : "/listings");
+      return;
     }
 
     if (subCategory) {
-      params.set("subcategory", subCategory.name);
-      params.set("subCategoryId", String(subCategory.id));
+      navigate(subcategoryPath(category, subCategory));
+      return;
     }
 
-    appendLocationParam(params, location);
-    setMenuOpen(false);
-    navigate(`/listings?${params.toString()}`);
+    navigate(categoryPath(category));
   };
 
   const handleSubCategoryClick = (subCategory) => {
@@ -206,23 +208,18 @@ function MegaMenuBar() {
 
   const handleAttributeClick = (attribute) => {
     const params = new URLSearchParams();
-
-    if (activeCategory.id !== ALL_CATEGORIES_ITEM.id) {
-      params.set("category", activeCategory.name);
-      params.set("categoryId", String(activeCategory.id));
-    }
-
-    if (selectedSubCategory) {
-      params.set("subcategory", selectedSubCategory.name);
-      params.set("subCategoryId", String(selectedSubCategory.id));
-    }
-
     params.set("attribute", attribute.slug || attribute.name);
     params.set("attributeId", String(attribute.id));
-    appendLocationParam(params, location);
+
+    const base =
+      selectedSubCategory && activeCategory.id !== ALL_CATEGORIES_ITEM.id
+        ? subcategoryPath(activeCategory, selectedSubCategory)
+        : activeCategory.id !== ALL_CATEGORIES_ITEM.id
+          ? categoryPath(activeCategory)
+          : "/listings";
 
     setMenuOpen(false);
-    navigate(`/listings?${params.toString()}`);
+    navigate(`${base}?${params.toString()}`);
   };
 
   return React.createElement(

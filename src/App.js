@@ -96,6 +96,22 @@ function App() {
             element: React.createElement(ProductListing),
           }),
           React.createElement(Route, {
+            path: "/category/:categorySlug/:subcategorySlug",
+            element: React.createElement(ProductListing),
+          }),
+          React.createElement(Route, {
+            path: "/category/:categorySlug",
+            element: React.createElement(ProductListing),
+          }),
+          React.createElement(Route, {
+            path: "/location/:citySlug/:categorySlug",
+            element: React.createElement(ProductListing),
+          }),
+          React.createElement(Route, {
+            path: "/location/:citySlug",
+            element: React.createElement(ProductListing),
+          }),
+          React.createElement(Route, {
             path: "/add-product",
             element: React.createElement(AddProduct),
           }),

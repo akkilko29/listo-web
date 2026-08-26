@@ -3,6 +3,8 @@ Allow: /
 Allow: /listings
 Allow: /product/
 Allow: /seller/
+Allow: /category/
+Allow: /location/
 Allow: /about
 Allow: /contact
 Allow: /safety

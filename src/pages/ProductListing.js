@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useParams, useLocation } from "react-router-dom";
 
 import {
   filterProductsPage,
@@ -19,6 +19,16 @@ import { useAuth } from "../context/AuthContext";
 import { appendLocationParam, useAppLocation } from "../context/LocationContext";
 import { POPULAR_LOCATIONS } from "../data/popularLocations";
 import { applySeo, canonicalPath } from "../seo/applySeo";
+import { breadcrumbJsonLd } from "../seo/breadcrumbJsonLd";
+import { absoluteUrl } from "../config/seoConfig";
+import {
+  findPopularLocationBySlug,
+  seoListingPath,
+} from "../seo/seoPaths";
+import {
+  resolveCategoryBySlug,
+  resolveSubcategoryBySlug,
+} from "../services/seoTaxonomy";
 import "../style/ProductListing.css";
 
 const PAGE_SIZE = 10;
@@ -73,16 +83,141 @@ function attributeInputType(dataType) {
 function ProductListing() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const routeParams = useParams();
+  const routerLocation = useLocation();
   const { isAuthenticated } = useAuth();
   const { location: globalLocation, setLocation } = useAppLocation();
 
-  const category = searchParams.get("category") || "All Categories";
-  const subcategory = searchParams.get("subcategory");
-  const categoryId = searchParams.get("categoryId") || "";
-  const subCategoryId = searchParams.get("subCategoryId") || "";
+  const isCategorySeo = routerLocation.pathname.startsWith("/category/");
+  const isLocationSeo = routerLocation.pathname.startsWith("/location/");
+  const isSeoRoute = isCategorySeo || isLocationSeo;
+
+  const [seoReady, setSeoReady] = useState(!isSeoRoute);
+  const [seoNotFound, setSeoNotFound] = useState(false);
+  const [seoCategory, setSeoCategory] = useState(null);
+  const [seoSubcategory, setSeoSubcategory] = useState(null);
+  const [seoPlace, setSeoPlace] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!isSeoRoute) {
+      setSeoReady(true);
+      setSeoNotFound(false);
+      setSeoCategory(null);
+      setSeoSubcategory(null);
+      setSeoPlace(null);
+      return undefined;
+    }
+
+    setSeoReady(false);
+    setSeoNotFound(false);
+
+    const load = async () => {
+      try {
+        let place = null;
+        let category = null;
+        let subcategory = null;
+
+        if (isLocationSeo) {
+          place = findPopularLocationBySlug(routeParams.citySlug);
+          if (!place) {
+            if (!cancelled) {
+              setSeoNotFound(true);
+              setSeoReady(true);
+            }
+            return;
+          }
+
+          if (routeParams.categorySlug) {
+            category = await resolveCategoryBySlug(routeParams.categorySlug);
+            if (!category) {
+              if (!cancelled) {
+                setSeoNotFound(true);
+                setSeoReady(true);
+              }
+              return;
+            }
+          }
+        }
+
+        if (isCategorySeo) {
+          category = await resolveCategoryBySlug(routeParams.categorySlug);
+          if (!category) {
+            if (!cancelled) {
+              setSeoNotFound(true);
+              setSeoReady(true);
+            }
+            return;
+          }
+
+          if (routeParams.subcategorySlug) {
+            subcategory = await resolveSubcategoryBySlug(
+              category,
+              routeParams.subcategorySlug
+            );
+            if (!subcategory) {
+              if (!cancelled) {
+                setSeoNotFound(true);
+                setSeoReady(true);
+              }
+              return;
+            }
+          }
+        }
+
+        if (!cancelled) {
+          setSeoPlace(place);
+          setSeoCategory(category);
+          setSeoSubcategory(subcategory);
+          setSeoNotFound(false);
+          setSeoReady(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setSeoNotFound(true);
+          setSeoReady(true);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isSeoRoute,
+    isCategorySeo,
+    isLocationSeo,
+    routeParams.categorySlug,
+    routeParams.subcategorySlug,
+    routeParams.citySlug,
+  ]);
+
+  const category = isSeoRoute
+    ? seoCategory?.name || "All Categories"
+    : searchParams.get("category") || "All Categories";
+  const subcategory = isSeoRoute
+    ? seoSubcategory?.name || null
+    : searchParams.get("subcategory");
+  const categoryId = isSeoRoute
+    ? seoCategory
+      ? String(seoCategory.id)
+      : ""
+    : searchParams.get("categoryId") || "";
+  const subCategoryId = isSeoRoute
+    ? seoSubcategory
+      ? String(seoSubcategory.id)
+      : ""
+    : searchParams.get("subCategoryId") || "";
   const keyword = searchParams.get("keyword") || "";
   const urlLocation = searchParams.get("location") || "";
-  const locationParam = urlLocation || globalLocation || "";
+  const locationParam = isLocationSeo
+    ? seoPlace?.label || ""
+    : isCategorySeo
+      ? urlLocation || ""
+      : urlLocation || globalLocation || "";
   const minPriceParam = searchParams.get("minPrice") || "";
   const maxPriceParam = searchParams.get("maxPrice") || "";
   const conditionParam = searchParams.get("condition") || "";
@@ -155,7 +290,7 @@ function ProductListing() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (hydratedLocation.current) {
+    if (hydratedLocation.current || isLocationSeo) {
       return;
     }
 
@@ -167,6 +302,10 @@ function ProductListing() {
   }, [globalLocation, searchParams, setLocation]);
 
   useEffect(() => {
+    if (isSeoRoute && !seoReady) {
+      return;
+    }
+
     setFilters((previous) => ({
       ...previous,
       keyword,
@@ -191,6 +330,8 @@ function ProductListing() {
     maxPriceParam,
     conditionParam,
     searchParams,
+    seoReady,
+    isSeoRoute,
   ]);
 
   useEffect(() => {
@@ -258,6 +399,15 @@ function ProductListing() {
 
   useEffect(() => {
     let cancelled = false;
+
+    if (isSeoRoute && (!seoReady || seoNotFound)) {
+      setProducts([]);
+      setTotalElements(0);
+      setTotalPages(1);
+      setLoading(false);
+      return undefined;
+    }
+
     setLoading(true);
     setError("");
 
@@ -307,6 +457,9 @@ function ProductListing() {
     searchParams,
     sortBy,
     pageNumber,
+    seoReady,
+    seoNotFound,
+    isSeoRoute,
   ]);
 
   useEffect(() => {
@@ -390,49 +543,66 @@ function ProductListing() {
   };
 
   const applyFilters = () => {
-    const params = new URLSearchParams();
+    const extra = new URLSearchParams();
 
     if (filters.keyword) {
-      params.set("keyword", filters.keyword);
-    }
-
-    if (filters.categoryId) {
-      params.set("categoryId", filters.categoryId);
-      params.set("category", filters.categoryName);
-    }
-
-    if (filters.subCategoryId) {
-      params.set("subCategoryId", filters.subCategoryId);
-      params.set("subcategory", filters.subCategoryName);
-    }
-
-    if (filters.location) {
-      params.set("location", filters.location);
-      setLocation(filters.location);
-    } else {
-      setLocation("");
+      extra.set("keyword", filters.keyword);
     }
 
     if (filters.minPrice) {
-      params.set("minPrice", filters.minPrice);
+      extra.set("minPrice", filters.minPrice);
     }
 
     if (filters.maxPrice) {
-      params.set("maxPrice", filters.maxPrice);
+      extra.set("maxPrice", filters.maxPrice);
     }
 
     const condition = toApiCondition(filters.condition);
     if (condition) {
-      params.set("condition", condition);
+      extra.set("condition", condition);
     }
 
     Object.entries(filters.attributes || {}).forEach(([slug, value]) => {
       if (String(value || "").trim()) {
-        params.set(slug, String(value).trim());
+        extra.set(slug, String(value).trim());
       }
     });
 
-    navigate(`/listings?${params.toString()}`);
+    const selectedCategory = categories.find(
+      (item) => String(item.id) === String(filters.categoryId)
+    );
+    const selectedSubcategory = subcategories.find(
+      (item) => String(item.id) === String(filters.subCategoryId)
+    );
+
+    if (filters.location) {
+      setLocation(filters.location);
+    } else if (!isLocationSeo) {
+      setLocation("");
+    }
+
+    const nextPath = seoListingPath({
+      category: selectedCategory,
+      subcategory: selectedSubcategory,
+      locationLabel: filters.location,
+    });
+
+    if (nextPath === "/listings") {
+      if (filters.categoryId && selectedCategory) {
+        extra.set("categoryId", filters.categoryId);
+        extra.set("category", filters.categoryName || selectedCategory.name);
+      }
+      if (filters.subCategoryId && selectedSubcategory) {
+        extra.set("subCategoryId", filters.subCategoryId);
+        extra.set("subcategory", filters.subCategoryName || selectedSubcategory.name);
+      }
+      if (filters.location) {
+        extra.set("location", filters.location);
+      }
+    }
+
+    const query = extra.toString();
+    navigate(query ? `${nextPath}?${query}` : nextPath);
     setFiltersOpen(false);
   };
 
@@ -445,7 +615,10 @@ function ProductListing() {
       params.set("page", String(nextPage));
     }
 
-    navigate(`/listings?${params.toString()}`);
+    const query = params.toString();
+    navigate(
+      query ? `${routerLocation.pathname}?${query}` : routerLocation.pathname
+    );
   };
 
   const clearFilters = () => {
@@ -490,19 +663,171 @@ function ProductListing() {
     }
   };
 
-  const heading = keyword
-    ? `Results for "${keyword}"`
-    : subcategory || category;
+  const heading = isSeoRoute
+    ? seoSubcategory?.name
+      ? `Buy & Sell ${seoSubcategory.name}`
+      : seoCategory?.name && seoPlace
+        ? `Buy & Sell ${seoCategory.name} in ${seoPlace.city}`
+        : seoPlace
+          ? `Buy & Sell in ${seoPlace.city}`
+          : seoCategory?.name
+            ? `Buy & Sell ${seoCategory.name}`
+            : "Listings"
+    : keyword
+      ? `Results for "${keyword}"`
+      : subcategory || category;
 
   useEffect(() => {
+    if (isSeoRoute && !seoReady) {
+      return undefined;
+    }
+
+    if (seoNotFound) {
+      applySeo({
+        title: "Page not found | LISTO",
+        description: "This LISTO page does not exist.",
+        path: routerLocation.pathname,
+        noIndex: true,
+      });
+      return undefined;
+    }
+
+    if (isSeoRoute) {
+      const crumbs = [{ name: "Home", path: "/" }];
+      let title = "Browse Listings | LISTO";
+      let description =
+        "Search local classified ads on LISTO. Find products from local buyers and sellers near you.";
+      const canonicalPathname = routerLocation.pathname;
+
+      if (seoPlace && seoCategory) {
+        title = `Buy & Sell ${seoCategory.name} in ${seoPlace.city} | LISTO`;
+        description = `Buy and sell ${seoCategory.name.toLowerCase()} in ${seoPlace.city} on LISTO. Find listings from local buyers and sellers.`;
+        crumbs.push({
+          name: seoPlace.city,
+          path: `/location/${seoPlace.citySlug}`,
+        });
+        crumbs.push({
+          name: seoCategory.name,
+          path: canonicalPathname,
+        });
+      } else if (seoPlace) {
+        title = `Buy & Sell in ${seoPlace.city} | LISTO`;
+        description = `Buy and sell products in ${seoPlace.city} on LISTO. Post a free ad and connect with local buyers and sellers.`;
+        crumbs.push({ name: seoPlace.city, path: canonicalPathname });
+      } else if (seoSubcategory && seoCategory) {
+        title = `Buy & Sell ${seoSubcategory.name} | LISTO`;
+        description = `Buy and sell ${seoSubcategory.name.toLowerCase()} on LISTO. Find new and used ${seoSubcategory.name.toLowerCase()} from local sellers near you.`;
+        crumbs.push({
+          name: seoCategory.name,
+          path: `/category/${routeParams.categorySlug}`,
+        });
+        crumbs.push({ name: seoSubcategory.name, path: canonicalPathname });
+      } else if (seoCategory) {
+        title = `Buy & Sell ${seoCategory.name} | LISTO`;
+        description = `Buy and sell ${seoCategory.name.toLowerCase()} on LISTO. Find new and used ${seoCategory.name.toLowerCase()} from local sellers near you.`;
+        crumbs.push({ name: seoCategory.name, path: canonicalPathname });
+      }
+
+      const isCategoryOnlyPage =
+        isCategorySeo &&
+        Boolean(seoCategory) &&
+        !seoSubcategory &&
+        !seoPlace &&
+        !routeParams.subcategorySlug;
+
+      const isSubcategoryPage =
+        isCategorySeo &&
+        Boolean(seoCategory) &&
+        Boolean(seoSubcategory) &&
+        !seoPlace &&
+        Boolean(routeParams.subcategorySlug);
+
+      const isLocationOnlyPage =
+        isLocationSeo &&
+        Boolean(seoPlace) &&
+        !seoCategory &&
+        !routeParams.categorySlug;
+
+      const isLocationCategoryPage =
+        isLocationSeo &&
+        Boolean(seoPlace) &&
+        Boolean(seoCategory) &&
+        Boolean(routeParams.categorySlug);
+
+      let listingRobots;
+      if (isCategoryOnlyPage && !loading) {
+        listingRobots = totalElements > 0 ? "index, follow" : "noindex, follow";
+      } else if (isSubcategoryPage && !loading) {
+        listingRobots = totalElements > 0 ? "index, follow" : "noindex, follow";
+      } else if (isLocationOnlyPage && !loading) {
+        listingRobots = totalElements > 0 ? "index, follow" : "noindex, follow";
+      } else if (isLocationCategoryPage && !loading) {
+        listingRobots = totalElements > 0 ? "index, follow" : "noindex, follow";
+      }
+
+      applySeo({
+        title,
+        description,
+        path: canonicalPathname,
+        robots: listingRobots,
+        jsonLd: breadcrumbJsonLd(crumbs, absoluteUrl),
+      });
+      return undefined;
+    }
+
     const place = locationParam ? ` in ${locationParam}` : " near you";
     const topic = keyword || subcategory || (category !== "All Categories" ? category : "classifieds");
     applySeo({
-      title: `${topic} for sale${place} | Listo`,
-      description: `Find ${topic} ads on Listo${place}. Filter by price, condition and category, then chat with local buyers and sellers.`,
+      title: `${topic} for sale${place} | LISTO`,
+      description: `Find ${topic} ads on LISTO${place}. Filter by price, condition and category, then chat with local buyers and sellers.`,
       path: canonicalPath("/listings", `?${searchParams.toString()}`),
     });
-  }, [heading, keyword, category, subcategory, locationParam, searchParams]);
+  }, [
+    heading,
+    keyword,
+    category,
+    subcategory,
+    locationParam,
+    searchParams,
+    isSeoRoute,
+    seoReady,
+    seoNotFound,
+    seoCategory,
+    seoSubcategory,
+    seoPlace,
+    routerLocation.pathname,
+    routeParams.categorySlug,
+    routeParams.subcategorySlug,
+    isCategorySeo,
+    isLocationSeo,
+    loading,
+    totalElements,
+  ]);
+
+  if (seoNotFound) {
+    return React.createElement(
+      "div",
+      { className: "product-listing-page" },
+      React.createElement(
+        "div",
+        { className: "listing-content" },
+        React.createElement("h1", { className: "listing-results-title" }, "Page not found"),
+        React.createElement(
+          "p",
+          { className: "listings-status" },
+          "This category, subcategory, or location page is not available."
+        )
+      )
+    );
+  }
+
+  if (isSeoRoute && !seoReady) {
+    return React.createElement(
+      "div",
+      { className: "product-listing-page" },
+      React.createElement("p", { className: "listings-status" }, "Loading listings...")
+    );
+  }
 
   const appliedFilterCount = [
     keyword,

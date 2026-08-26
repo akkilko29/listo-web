@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { listingsHref, useAppLocation } from "../context/LocationContext";
+import { useAppLocation } from "../context/LocationContext";
 import { getCategories } from "../services/categoryService";
-import { withCategoryMeta } from "../utils/categoryMeta";
+import { seoListingPath } from "../seo/seoPaths";
 import { UI_CONFIG } from "../config/uiConfig";
+import { withCategoryMeta } from "../utils/categoryMeta";
 
 import "../style/BrowseCategories.css";
 
@@ -52,9 +53,9 @@ function BrowseCategories() {
 
   const openCategory = (category) => {
     navigate(
-      listingsHref(location, {
-        category: category.name,
-        categoryId: String(category.id),
+      seoListingPath({
+        category,
+        locationLabel: location,
       })
     );
   };

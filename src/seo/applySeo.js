@@ -112,7 +112,7 @@ export function seoForLocation(pathname, search = "") {
 
   if (pathname.startsWith("/product/")) {
     return {
-      title: "Listing | Listo",
+      title: "Listing | LISTO",
       description: DEFAULT_DESCRIPTION,
       path,
       noIndex: false,
@@ -121,9 +121,18 @@ export function seoForLocation(pathname, search = "") {
 
   if (pathname.startsWith("/seller/")) {
     return {
-      title: "Seller on Listo",
-      description: "View a Listo seller profile and their local classified listings.",
+      title: "Seller on LISTO",
+      description: "View a LISTO seller profile and their local classified listings.",
       path,
+      noIndex: false,
+    };
+  }
+
+  if (pathname.startsWith("/category/") || pathname.startsWith("/location/")) {
+    return {
+      title: `${SITE_NAME} | ${SITE_TAGLINE}`,
+      description: DEFAULT_DESCRIPTION,
+      path: pathname,
       noIndex: false,
     };
   }
@@ -195,6 +204,7 @@ export function applySeo({
   path,
   image,
   noIndex = false,
+  robots: robotsOverride,
   keywords,
   type = "website",
   jsonLd,
@@ -213,7 +223,9 @@ export function applySeo({
     (isHome ? HOME_OG_DESCRIPTION : pageDescription);
   const canonical = isHome ? `${getSiteUrl()}/` : absoluteUrl(path || "/");
   const ogImage = absoluteUrl(image || DEFAULT_OG_IMAGE);
-  const robots = noIndex ? "noindex, nofollow" : "index, follow";
+  const robots =
+    String(robotsOverride || "").trim() ||
+    (noIndex ? "noindex, nofollow" : "index, follow");
 
   document.title = pageTitle;
   document.documentElement.lang = "en-IN";

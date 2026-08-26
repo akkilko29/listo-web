@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { listingsHref, useAppLocation } from "../context/LocationContext";
-import { SOCIAL_LINKS, TRENDING_SEARCHES } from "../data/infoPages";
 import { getCategories } from "../services/categoryService";
+import {
+  categoryPath,
+  getPopularSeoLocations,
+  locationPath,
+  seoListingPath,
+} from "../seo/seoPaths";
+import { SOCIAL_LINKS, TRENDING_SEARCHES } from "../data/infoPages";
+import { useAppLocation } from "../context/LocationContext";
 import "../style/Sitemap.css";
 
 function trendingHref(location, item, categories) {
@@ -13,13 +19,13 @@ function trendingHref(location, item, categories) {
   });
 
   if (match) {
-    return listingsHref(location, {
-      category: match.name,
-      categoryId: String(match.id),
+    return seoListingPath({
+      category: match,
+      locationLabel: location,
     });
   }
 
-  return listingsHref(location, { keyword: item.keyword });
+  return seoListingPath({ locationLabel: location });
 }
 
 function SitemapSection({ title, children }) {
@@ -156,15 +162,27 @@ function Sitemap() {
               SitemapLink,
               {
                 key: category.id,
-                to: listingsHref(location, {
-                  category: category.name,
-                  categoryId: String(category.id),
-                }),
+                to: categoryPath(category),
               },
               category.name
             )
           )
+        ),
+
+      React.createElement(
+        SitemapSection,
+        { title: "Locations" },
+        getPopularSeoLocations().map((place) =>
+          React.createElement(
+            SitemapLink,
+            {
+              key: place.citySlug,
+              to: locationPath(place.citySlug),
+            },
+            place.city
+          )
         )
+      )
     )
   );
 }

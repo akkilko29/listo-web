@@ -17,7 +17,9 @@ import {
 } from "../services/favoriteService";
 import OfferModal, { buildOfferMessage } from "../components/OfferModal";
 import { applySeo } from "../seo/applySeo";
+import { breadcrumbJsonLd } from "../seo/breadcrumbJsonLd";
 import { absoluteUrl } from "../config/seoConfig";
+import { categoryPath, subcategoryPath } from "../seo/seoPaths";
 import { getUserById } from "../services/authService";
 import {
   getCurrentUserId,
@@ -93,7 +95,17 @@ function ProductDetails() {
   }, [id]);
 
   useEffect(() => {
-    if (!product) {
+    if (loading) {
+      return undefined;
+    }
+
+    if (error || !product) {
+      applySeo({
+        title: "Listing not found | LISTO",
+        description: "This listing is not available on LISTO.",
+        path: `/product/${id}`,
+        noIndex: true,
+      });
       return undefined;
     }
 
@@ -102,38 +114,74 @@ function ProductDetails() {
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 160);
-    const locationLabel = product.location || "India";
-    const priceLabel = product.price || "";
+    const locationLabel = product.location || "";
+    const priceLabel = product.priceValue
+      ? `₹${product.priceValue.toLocaleString("en-IN")}`
+      : "";
+    const title = priceLabel
+      ? `${product.title} - ${priceLabel} | LISTO`
+      : `${product.title} | LISTO`;
+    const description =
+      summary ||
+      [product.title, "for sale on LISTO", locationLabel, priceLabel]
+        .filter(Boolean)
+        .join(". ");
+    const path = `/product/${product.id}`;
+    const crumbs = [{ name: "Home", path: "/" }];
+
+    if (product.categoryName) {
+      crumbs.push({
+        name: product.categoryName,
+        path: categoryPath({
+          id: product.categoryId,
+          name: product.categoryName,
+        }),
+      });
+    }
+
+    if (product.subCategoryName && product.categoryName) {
+      crumbs.push({
+        name: product.subCategoryName,
+        path: subcategoryPath(
+          { id: product.categoryId, name: product.categoryName },
+          { id: product.subCategoryId, name: product.subCategoryName }
+        ),
+      });
+    }
+
+    crumbs.push({ name: product.title, path });
+
+    const productSchema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.title,
+      description: summary || product.title,
+      image: image ? resolveMediaUrl(image) : undefined,
+      category: product.categoryName || undefined,
+      offers: {
+        "@type": "Offer",
+        url: absoluteUrl(path),
+        priceCurrency: "INR",
+        price: product.priceValue || undefined,
+        availability: product.sold
+          ? "https://schema.org/SoldOut"
+          : "https://schema.org/InStock",
+      },
+    };
 
     applySeo({
-      title: `${product.title} | Listo`,
-      description:
-        summary ||
-        `${product.title} for sale on Listo in ${locationLabel}. ${priceLabel}`.trim(),
-      path: `/product/${product.id}`,
+      title,
+      description,
+      ogTitle: title,
+      ogDescription: description,
+      path,
       image: image ? resolveMediaUrl(image) : undefined,
       type: "product",
+      noIndex: false,
       jsonLdId: "listo-jsonld-page",
-      jsonLd: {
-        "@context": "https://schema.org",
-        "@type": "Product",
-        name: product.title,
-        description: summary || product.title,
-        image: image ? resolveMediaUrl(image) : undefined,
-        category: product.category || undefined,
-        offers: {
-          "@type": "Offer",
-          url: absoluteUrl(`/product/${product.id}`),
-          priceCurrency: "INR",
-          price: product.priceValue || undefined,
-          availability: product.sold
-            ? "https://schema.org/SoldOut"
-            : "https://schema.org/InStock",
-          itemCondition: "https://schema.org/UsedCondition",
-        },
-      },
+      jsonLd: [productSchema, breadcrumbJsonLd(crumbs, absoluteUrl)],
     });
-  }, [product]);
+  }, [product, loading, error, id]);
 
   useEffect(() => {
     let cancelled = false;

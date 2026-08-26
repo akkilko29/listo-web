@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import logo from "../assets/listo_logo.png";
+import { categoryPath, seoListingPath } from "../seo/seoPaths";
 import { listingsHref, useAppLocation } from "../context/LocationContext";
 import { SOCIAL_LINKS, TRENDING_SEARCHES } from "../data/infoPages";
 import { UI_CONFIG } from "../config/uiConfig";
@@ -15,13 +16,13 @@ function trendingHref(location, item, categories) {
   });
 
   if (match) {
-    return listingsHref(location, {
-      category: match.name,
-      categoryId: String(match.id),
+    return seoListingPath({
+      category: match,
+      locationLabel: location,
     });
   }
 
-  return listingsHref(location, { keyword: item.keyword });
+  return seoListingPath({ locationLabel: location });
 }
 
 function Footer() {
@@ -124,10 +125,7 @@ function Footer() {
               Link,
               {
                 key: category.id,
-                to: listingsHref(location, {
-                  category: category.name,
-                  categoryId: String(category.id),
-                }),
+                to: categoryPath(category),
               },
               category.name
             )
