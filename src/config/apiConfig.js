@@ -7,7 +7,7 @@
  *
  * Production builds on a real domain use VITE_API_BASE_URL.
  */
-const DEFAULT_API_BASE_URL = "http://127.0.0.1:8080";
+const DEFAULT_API_BASE_URL = "https://listolisting.online";
 
 export const API_ORIGIN = String(
   import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL
@@ -34,6 +34,9 @@ export const API_BASE_URL = getApiBaseUrl();
 export const API_ENDPOINTS = {
   login: "/api/auth/login",
   register: "/api/auth/register",
+  registerVerify: "/api/auth/register/verify",
+  forgotPassword: "/api/auth/forgot-password",
+  resetPassword: "/api/auth/reset-password",
   authGoogle: "/api/auth/google",
   usersMe: "/api/users/me",
   usersMePhoto: "/api/users/me/profile-photo",

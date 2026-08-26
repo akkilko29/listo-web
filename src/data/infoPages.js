@@ -9,7 +9,7 @@ export const INFO_PAGES = {
       },
       {
         heading: "Our promise",
-        body: "We focus on real listings, clear location filters, and simple chat between buyers and sellers. Listo is made in Bihar with care for Indian cities and towns.",
+        body: "We focus on real listings, clear location filters, and simple chat between buyers and sellers across India.",
       },
       {
         heading: "Need help?",

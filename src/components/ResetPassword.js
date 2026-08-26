@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 
 import listoLogo from "../assets/listo_logo.png";
+import { resetPasswordRequest } from "../services/authService";
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -91,60 +92,10 @@ function ResetPassword() {
     setSubmitting(true);
 
     try {
-      /*
-       * =====================================
-       * RESET PASSWORD API
-       * =====================================
-       */
-
-      const response = await fetch(
-        "http://localhost:8080/api/auth/reset-password",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            token: token,
-
-            newPassword:
-              password,
-          }),
-        }
-      );
-
-      /*
-       * Read response
-       */
-
-      let result = {};
-
-      try {
-        result =
-          await response.json();
-      } catch {
-        result = {};
-      }
-
-      /*
-       * Backend error
-       */
-
-      if (!response.ok) {
-        throw new Error(
-          result.message ||
-          "Unable to reset password."
-        );
-      }
-
-      /*
-       * Backend may return:
-       *
-       * success:false
-       */
+      const result = await resetPasswordRequest({
+        token,
+        newPassword: password,
+      }) || {};
 
       if (
         result.success === false

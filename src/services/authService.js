@@ -112,3 +112,28 @@ export function registerRequest({
     return data;
   });
 }
+
+export function verifyRegisterOtp({ email, otp, profilePhoto }) {
+  const formData = new FormData();
+  formData.append("email", email);
+  formData.append("otp", otp);
+
+  if (profilePhoto) {
+    formData.append("profilePhoto", profilePhoto);
+  }
+
+  return apiPostForm(API_ENDPOINTS.registerVerify, formData);
+}
+
+export function forgotPasswordRequest(email) {
+  return apiPost(API_ENDPOINTS.forgotPassword, {
+    email: String(email || "").trim(),
+  });
+}
+
+export function resetPasswordRequest({ token, newPassword }) {
+  return apiPost(API_ENDPOINTS.resetPassword, {
+    token,
+    newPassword,
+  });
+}

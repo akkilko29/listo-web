@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import listoLogo from "../assets/listo_logo.png";
+import { verifyRegisterOtp } from "../services/authService";
 
 function RegisterOtp({
   email,
@@ -47,63 +48,13 @@ function RegisterOtp({
     setVerifying(true);
 
     try {
-      const data = new FormData();
+      const data = await verifyRegisterOtp({
+        email,
+        otp,
+        profilePhoto,
+      });
 
-      data.append(
-        "email",
-        email
-      );
-
-      data.append(
-        "otp",
-        otp
-      );
-
-      /*
-       * Profile photo is sent during
-       * OTP verification because your
-       * backend endpoint expects it here.
-       */
-
-      if (profilePhoto) {
-        data.append(
-          "profilePhoto",
-          profilePhoto
-        );
-      }
-
-      const response = await fetch(
-        "http://localhost:8080/api/auth/register/verify",
-        {
-          method: "POST",
-          body: data,
-        }
-      );
-
-      let result = {};
-
-      try {
-        result =
-          await response.json();
-      } catch {
-        result = {};
-      }
-
-      /*
-       * 201 Created = SUCCESS
-       */
-
-      if (!response.ok) {
-        throw new Error(
-          result.message ||
-          "OTP verification failed."
-        );
-      }
-
-      /*
-       * If backend explicitly says
-       * success:false
-       */
+      let result = data || {};
 
       if (
         result.success === false

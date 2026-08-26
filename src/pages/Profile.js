@@ -374,11 +374,11 @@ function Profile() {
             }),
             field("profile-city", "City", form.city, handleChange("city"), {
               required: true,
-              placeholder: "Patna",
+              placeholder: "City",
             }),
             field("profile-state", "State", form.state, handleChange("state"), {
               required: true,
-              placeholder: "Bihar",
+              placeholder: "State",
             })
           ),
 

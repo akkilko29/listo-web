@@ -3,6 +3,7 @@ import {
   DEFAULT_DESCRIPTION,
   DEFAULT_KEYWORDS,
   DEFAULT_OG_IMAGE,
+  HOME_OG_DESCRIPTION,
   PRIVATE_PATH_PREFIXES,
   ROUTE_SEO,
   SITE_NAME,
@@ -130,6 +131,8 @@ export function seoForLocation(pathname, search = "") {
   return {
     title: exact?.title || `${SITE_NAME} | ${SITE_TAGLINE}`,
     description: exact?.description || DEFAULT_DESCRIPTION,
+    ogTitle: exact?.ogTitle || exact?.title,
+    ogDescription: exact?.ogDescription,
     path,
     noIndex: Boolean(exact?.noIndex || privatePage),
   };
@@ -140,11 +143,14 @@ export function organizationJsonLd() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
-    url: getSiteUrl(),
+    url: `${getSiteUrl()}/`,
     email: "support@listo.in",
     description: DEFAULT_DESCRIPTION,
     logo: absoluteUrl(DEFAULT_OG_IMAGE),
-    areaServed: "IN",
+    areaServed: {
+      "@type": "Country",
+      name: "India",
+    },
     sameAs: SOCIAL_LINKS.map((item) => item.href),
   };
 }
@@ -154,7 +160,7 @@ export function websiteJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
-    url: getSiteUrl(),
+    url: `${getSiteUrl()}/`,
     description: DEFAULT_DESCRIPTION,
     potentialAction: {
       "@type": "SearchAction",
@@ -169,7 +175,7 @@ export function webApplicationJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: SITE_NAME,
-    url: getSiteUrl(),
+    url: `${getSiteUrl()}/`,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description: DEFAULT_DESCRIPTION,
@@ -184,6 +190,8 @@ export function webApplicationJsonLd() {
 export function applySeo({
   title,
   description,
+  ogTitle,
+  ogDescription,
   path,
   image,
   noIndex = false,
@@ -198,7 +206,12 @@ export function applySeo({
 
   const pageTitle = title || `${SITE_NAME} | ${SITE_TAGLINE}`;
   const pageDescription = description || DEFAULT_DESCRIPTION;
-  const canonical = absoluteUrl(path || "/");
+  const socialTitle = ogTitle || pageTitle;
+  const isHome = String(path || "/").split("?")[0] === "/";
+  const socialDescription =
+    ogDescription ||
+    (isHome ? HOME_OG_DESCRIPTION : pageDescription);
+  const canonical = isHome ? `${getSiteUrl()}/` : absoluteUrl(path || "/");
   const ogImage = absoluteUrl(image || DEFAULT_OG_IMAGE);
   const robots = noIndex ? "noindex, nofollow" : "index, follow";
 
@@ -213,14 +226,14 @@ export function applySeo({
   upsertMetaByName("theme-color", "#0F172A");
 
   upsertMetaByName("twitter:card", "summary_large_image");
-  upsertMetaByName("twitter:title", pageTitle);
-  upsertMetaByName("twitter:description", pageDescription);
+  upsertMetaByName("twitter:title", socialTitle);
+  upsertMetaByName("twitter:description", socialDescription);
   upsertMetaByName("twitter:image", ogImage);
   upsertMetaByName("twitter:site", "@listolisting");
 
   upsertMetaByProperty("og:site_name", SITE_NAME);
-  upsertMetaByProperty("og:title", pageTitle);
-  upsertMetaByProperty("og:description", pageDescription);
+  upsertMetaByProperty("og:title", socialTitle);
+  upsertMetaByProperty("og:description", socialDescription);
   upsertMetaByProperty("og:type", type);
   upsertMetaByProperty("og:url", canonical);
   upsertMetaByProperty("og:image", ogImage);

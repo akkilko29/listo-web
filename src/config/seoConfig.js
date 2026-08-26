@@ -1,9 +1,20 @@
-export const SITE_NAME = "Listo";
-export const SITE_TAGLINE = "Buy and sell locally with verified neighbours";
-export const DEFAULT_DESCRIPTION =
-  "Listo is India's neighbourhood classifieds marketplace. Buy and sell mobiles, bikes, furniture, fashion, jobs and services near you. Post a free ad, chat with local sellers, and find trusted deals in your city.";
+export const SITE_NAME = "LISTO";
+export const SITE_URL = "https://listolisting.in";
+export const SITE_TAGLINE = "Buy & Sell Products Near You | Free Classifieds";
+
+export const HOME_TITLE =
+  "LISTO - Buy & Sell Products Near You | Free Classifieds";
+
+export const HOME_DESCRIPTION =
+  "Buy and sell mobiles, bikes, cars, furniture, electronics, fashion and more on LISTO. Post your ad for free and connect with local buyers and sellers near you.";
+
+export const HOME_OG_DESCRIPTION =
+  "Buy and sell products locally on LISTO. Post your ad for free and connect with buyers and sellers near you.";
+
+export const DEFAULT_DESCRIPTION = HOME_DESCRIPTION;
+
 export const DEFAULT_KEYWORDS =
-  "Listo, classifieds India, buy and sell, local marketplace, post free ad, used mobiles, bikes, furniture, jobs near me, Bihar classifieds";
+  "LISTO, free classifieds, buy and sell, local marketplace, mobiles, bikes, cars, furniture, electronics, fashion, jobs, services";
 
 export function getSiteUrl() {
   const envUrl = String(import.meta.env.VITE_SITE_URL || "").replace(/\/$/, "");
@@ -11,14 +22,7 @@ export function getSiteUrl() {
     return envUrl;
   }
 
-  if (typeof window !== "undefined" && window.location?.origin) {
-    const host = window.location.hostname;
-    if (host && host !== "localhost" && host !== "127.0.0.1") {
-      return window.location.origin;
-    }
-  }
-
-  return "https://listolisting.in";
+  return SITE_URL;
 }
 
 export function absoluteUrl(path = "/") {
@@ -46,91 +50,95 @@ export const PRIVATE_PATH_PREFIXES = [
 
 export const ROUTE_SEO = {
   "/": {
-    title: "Listo | Local Classifieds to Buy & Sell Near You",
-    description: DEFAULT_DESCRIPTION,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    ogTitle: HOME_TITLE,
+    ogDescription: HOME_OG_DESCRIPTION,
   },
   "/home": {
-    title: "Listo | Local Classifieds to Buy & Sell Near You",
-    description: DEFAULT_DESCRIPTION,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    ogTitle: HOME_TITLE,
+    ogDescription: HOME_OG_DESCRIPTION,
   },
   "/listings": {
-    title: "Browse Listings | Listo Classifieds",
+    title: "Browse Listings | LISTO",
     description:
-      "Search local classified ads on Listo. Filter by category, city, price and condition to find mobiles, vehicles, furniture, fashion, jobs and more near you.",
+      "Search local classified ads on LISTO. Filter by category, city, price and condition to find mobiles, bikes, cars, furniture, electronics, fashion, jobs and more near you.",
   },
   "/about": {
-    title: "About Listo | Neighbourhood Marketplace",
+    title: "About LISTO | Local Marketplace",
     description:
-      "Listo is a local classifieds platform from Bihar that helps people buy and sell close-to-heart items with verified neighbours across Indian cities and towns.",
+      "LISTO is an India-wide local classifieds marketplace where people buy and sell mobiles, bikes, cars, furniture, electronics, fashion and more near them.",
   },
   "/contact": {
-    title: "Contact Support | Listo",
+    title: "Contact Support | LISTO",
     description:
-      "Get help with your Listo account, listing or chat. Email support@listo.in for account issues, safety reports and marketplace questions.",
+      "Get help with your LISTO account, listing or chat. Email support@listo.in for account issues, safety reports and marketplace questions.",
   },
   "/safety": {
-    title: "Safety & Security Tips | Listo",
+    title: "Safety & Security Tips | LISTO",
     description:
-      "Stay safe on Listo: meet in public, inspect items before you pay, never share OTPs, and keep buyer-seller chat on the platform.",
+      "Stay safe on LISTO: meet in public, inspect items before you pay, never share OTPs, and keep buyer-seller chat on the platform.",
   },
   "/terms": {
-    title: "Terms of Use | Listo",
+    title: "Terms of Use | LISTO",
     description:
-      "Read Listo's terms of use for posting listings, chatting with buyers and sellers, and using the classifieds marketplace lawfully.",
+      "Read LISTO's terms of use for posting listings, chatting with buyers and sellers, and using the classifieds marketplace lawfully.",
   },
   "/privacy": {
-    title: "Privacy Policy | Listo",
+    title: "Privacy Policy | LISTO",
     description:
-      "Learn how Listo collects and uses account, listing and chat information to run a secure local classifieds marketplace. We do not sell your personal data.",
+      "Learn how LISTO collects and uses account, listing and chat information to run a secure local classifieds marketplace. We do not sell your personal data.",
   },
   "/sitemap": {
-    title: "Sitemap | Listo",
+    title: "Sitemap | LISTO",
     description:
-      "Browse every public Listo page: home, listings, categories, account, company information and social profiles.",
+      "Browse every public LISTO page: home, listings, categories, account, company information and social profiles.",
   },
   "/login": {
-    title: "Login | Listo",
-    description: "Sign in to Listo to post ads, chat with buyers and sellers, and manage your listings.",
+    title: "Login | LISTO",
+    description: "Sign in to LISTO to post ads, chat with buyers and sellers, and manage your listings.",
     noIndex: true,
   },
   "/register": {
-    title: "Create Account | Listo",
-    description: "Register on Listo to post free classified ads and start buying and selling locally.",
+    title: "Create Account | LISTO",
+    description: "Register on LISTO to post free classified ads and start buying and selling locally.",
     noIndex: true,
   },
   "/forgot-password": {
-    title: "Forgot Password | Listo",
-    description: "Reset your Listo account password.",
+    title: "Forgot Password | LISTO",
+    description: "Reset your LISTO account password.",
     noIndex: true,
   },
   "/reset-password": {
-    title: "Reset Password | Listo",
-    description: "Choose a new password for your Listo account.",
+    title: "Reset Password | LISTO",
+    description: "Choose a new password for your LISTO account.",
     noIndex: true,
   },
   "/profile": {
-    title: "My Profile | Listo",
-    description: "Update your Listo profile, photo, city and password.",
+    title: "My Profile | LISTO",
+    description: "Update your LISTO profile, photo, city and password.",
     noIndex: true,
   },
   "/wishlist": {
-    title: "Wishlist | Listo",
-    description: "Saved classified ads on Listo.",
+    title: "Wishlist | LISTO",
+    description: "Saved classified ads on LISTO.",
     noIndex: true,
   },
   "/chat": {
-    title: "Messages | Listo",
-    description: "Chat with buyers and sellers on Listo.",
+    title: "Messages | LISTO",
+    description: "Chat with buyers and sellers on LISTO.",
     noIndex: true,
   },
   "/my-listings": {
-    title: "My Listings | Listo",
-    description: "Manage the ads you posted on Listo.",
+    title: "My Listings | LISTO",
+    description: "Manage the ads you posted on LISTO.",
     noIndex: true,
   },
   "/add-product": {
-    title: "Post an Ad | Listo",
-    description: "Post a free classified ad on Listo. Add photos, price, location and category details.",
+    title: "Post an Ad | LISTO",
+    description: "Post a free classified ad on LISTO. Add photos, price, location and category details.",
     noIndex: true,
   },
 };

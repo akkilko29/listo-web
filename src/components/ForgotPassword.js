@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 import loginIcon from "../assets/listo_logo.png";
+import { forgotPasswordRequest } from "../services/authService";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -31,37 +32,9 @@ function ForgotPassword() {
     setSubmitting(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/auth/forgot-password",
-        {
-          method: "POST",
+      const result = await forgotPasswordRequest(email.trim());
 
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            email: email.trim(),
-          }),
-        }
-      );
-
-      let result = {};
-
-      try {
-        result = await response.json();
-      } catch {
-        result = {};
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          result.message ||
-            "Unable to send reset link."
-        );
-      }
-
-      if (result.success === false) {
+      if (result?.success === false) {
         throw new Error(
           result.message ||
             "Unable to send reset link."
