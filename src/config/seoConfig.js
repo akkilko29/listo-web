@@ -74,7 +74,7 @@ export const ROUTE_SEO = {
   "/contact": {
     title: "Contact Support | LISTO",
     description:
-      "Get help with your LISTO account, listing or chat. Email support@listo.in for account issues, safety reports and marketplace questions.",
+      "Get help with your LISTO account, listing or chat. Email support@listolisting.in for account issues, safety reports and marketplace questions.",
   },
   "/safety": {
     title: "Safety & Security Tips | LISTO",

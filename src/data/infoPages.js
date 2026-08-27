@@ -23,7 +23,7 @@ export const INFO_PAGES = {
     sections: [
       {
         heading: "How to reach us",
-        body: "For listing issues, login trouble, or report a user, email support@listo.in. Include your registered email and the listing or chat ID if you have one.",
+        body: "For listing issues, login trouble, or report a user, email support@listolisting.in. Include your registered email and the listing or chat ID if you have one.",
       },
       {
         heading: "Typical response time",

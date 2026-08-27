@@ -153,7 +153,7 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: SITE_NAME,
     url: `${getSiteUrl()}/`,
-    email: "support@listo.in",
+    email: "support@listolisting.in",
     description: DEFAULT_DESCRIPTION,
     logo: absoluteUrl(DEFAULT_OG_IMAGE),
     areaServed: {
