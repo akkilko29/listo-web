@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import listoLogo from "../assets/listo_logo.png";
 import { verifyRegisterOtp } from "../services/authService";
+import { trackCompleteRegistration } from "../services/metaPixel";
 
 function RegisterOtp({
   email,
@@ -64,6 +65,13 @@ function RegisterOtp({
           "OTP verification failed."
         );
       }
+
+      /*
+       * Registration is complete only after
+       * the backend confirms OTP verification.
+       * Fire Meta CompleteRegistration once.
+       */
+      trackCompleteRegistration();
 
       /*
        * =====================================

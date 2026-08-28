@@ -5,6 +5,7 @@ import googleLogo from "../assets/google-icon.png";
 import { useAuth } from "../context/AuthContext";
 import { requestGoogleIdToken } from "../services/googleAuth";
 import loginIcon from "../assets/listo_logo.png";
+import { trackCompleteRegistration } from "../services/metaPixel";
 
 function Login() {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ function Login() {
     try {
       const idToken = await requestGoogleIdToken();
       await loginWithGoogle(idToken);
+      trackCompleteRegistration();
       navigate("/");
     } catch (err) {
       setError(err.message || "Google sign-in failed. Please try again.");
