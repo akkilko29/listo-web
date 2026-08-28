@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import googleLogo from "../assets/google-icon.png";
 import { useAuth } from "../context/AuthContext";
-import { requestGoogleIdToken } from "../services/googleAuth";
+import { mountGoogleSignInButton } from "../services/googleAuth";
 import loginIcon from "../assets/listo_logo.png";
 import { trackCompleteRegistration } from "../services/metaPixel";
 
 function Login() {
   const navigate = useNavigate();
   const { login, loginWithGoogle } = useAuth();
+  const googleButtonRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,21 +32,61 @@ function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setError("");
-    setGoogleSubmitting(true);
-
-    try {
-      const idToken = await requestGoogleIdToken();
-      await loginWithGoogle(idToken);
-      trackCompleteRegistration();
-      navigate("/");
-    } catch (err) {
-      setError(err.message || "Google sign-in failed. Please try again.");
-    } finally {
-      setGoogleSubmitting(false);
+  useEffect(() => {
+    const container = googleButtonRef.current;
+    if (!container) {
+      return undefined;
     }
-  };
+
+    let cancelled = false;
+    let unmount = () => {};
+
+    mountGoogleSignInButton(container, async (credential, mountError) => {
+      if (cancelled) {
+        return;
+      }
+
+      setError("");
+
+      if (mountError || !credential) {
+        setError(
+          mountError?.message || "Google sign-in failed. Please try again."
+        );
+        return;
+      }
+
+      setGoogleSubmitting(true);
+
+      try {
+        await loginWithGoogle(credential);
+        trackCompleteRegistration();
+        navigate("/");
+      } catch (err) {
+        setError(err.message || "Google sign-in failed. Please try again.");
+      } finally {
+        setGoogleSubmitting(false);
+      }
+    })
+      .then((cleanup) => {
+        if (cancelled) {
+          cleanup?.();
+          return;
+        }
+        if (typeof cleanup === "function") {
+          unmount = cleanup;
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || "Google Sign-In is unavailable");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      unmount();
+    };
+  }, [loginWithGoogle, navigate]);
 
   return React.createElement(
     "main",
@@ -174,25 +214,10 @@ function Login() {
         React.createElement("span")
       ),
 
-      React.createElement(
-        "button",
-        {
-          type: "button",
-          className: "google-button",
-          onClick: handleGoogleLogin,
-          disabled: submitting || googleSubmitting,
-        },
-        React.createElement("img", {
-          src: googleLogo,
-          alt: "",
-          className: "google-icon-image",
-        }),
-        React.createElement(
-          "span",
-          null,
-          googleSubmitting ? "CONNECTING TO GOOGLE..." : "Continue with Google"
-        )
-      ),
+      React.createElement("div", {
+        className: "google-button-host",
+        ref: googleButtonRef,
+      }),
 
       React.createElement(
         "p",

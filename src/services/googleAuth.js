@@ -117,6 +117,15 @@ export async function mountGoogleSignInButton(container, onCredential) {
   };
 }
 
+let googleIdTokenAttempt = 0;
+let settlePreviousGoogleIdToken = null;
+
+function cancelledGoogleSignInError() {
+  const error = new Error("Google sign-in cancelled");
+  error.code = "GOOGLE_SIGNIN_CANCELLED";
+  return error;
+}
+
 export async function requestGoogleIdToken() {
   const clientId = getGoogleClientId();
   if (!clientId) {
@@ -128,18 +137,30 @@ export async function requestGoogleIdToken() {
     throw new Error("Google Sign-In is unavailable");
   }
 
+  if (settlePreviousGoogleIdToken) {
+    settlePreviousGoogleIdToken(cancelledGoogleSignInError());
+    settlePreviousGoogleIdToken = null;
+  }
+
+  const attempt = ++googleIdTokenAttempt;
+
   return new Promise((resolve, reject) => {
     let settled = false;
 
-    const finish = (error, token) => {
-      if (settled) {
+    const finish = (error, token, cancelPrompt) => {
+      if (settled || attempt !== googleIdTokenAttempt) {
         return;
       }
       settled = true;
-      try {
-        google.accounts.id.cancel();
-      } catch {
-        /* ignore */
+      if (settlePreviousGoogleIdToken) {
+        settlePreviousGoogleIdToken = null;
+      }
+      if (cancelPrompt) {
+        try {
+          google.accounts.id.cancel();
+        } catch {
+          /* ignore */
+        }
       }
       if (error) {
         reject(error);
@@ -148,22 +169,101 @@ export async function requestGoogleIdToken() {
       }
     };
 
+    settlePreviousGoogleIdToken = (error) => {
+      finish(error, undefined, false);
+    };
+
+    const finishCancelled = () => {
+      finish(cancelledGoogleSignInError(), undefined, false);
+    };
+
+    const promptReason = (getter) => {
+      try {
+        return getter?.() || "";
+      } catch {
+        return "";
+      }
+    };
+
     google.accounts.id.initialize({
       client_id: clientId,
       callback: (response) => {
         if (response?.credential) {
-          finish(null, response.credential);
+          finish(null, response.credential, true);
           return;
         }
-        finish(new Error("Google did not return an ID token"));
+        finish(new Error("Google did not return an ID token"), undefined, true);
       },
       auto_select: false,
       cancel_on_tap_outside: true,
+      use_fedcm_for_prompt: false,
     });
 
     google.accounts.id.prompt((notification) => {
-      if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
-        finish(new Error("Google sign-in is blocked for this site. Add this origin in Google Cloud Console."));
+      if (!notification || attempt !== googleIdTokenAttempt) {
+        return;
+      }
+
+      if (notification.isDismissedMoment?.()) {
+        const reason = promptReason(notification.getDismissedReason);
+        if (reason === "credential_returned" || reason === "flow_restarted") {
+          return;
+        }
+        finishCancelled();
+        return;
+      }
+
+      if (notification.isSkippedMoment?.()) {
+        const reason = promptReason(notification.getSkippedReason);
+        if (reason === "issuing_failed") {
+          finish(
+            new Error("Google could not complete sign-in. Please try again."),
+            undefined,
+            true
+          );
+          return;
+        }
+        finishCancelled();
+        return;
+      }
+
+      if (notification.isNotDisplayed?.()) {
+        const reason = promptReason(notification.getNotDisplayedReason);
+        if (reason === "unregistered_origin") {
+          finish(
+            new Error(
+              "Google sign-in is blocked for this site. Add this origin in Google Cloud Console."
+            ),
+            undefined,
+            true
+          );
+          return;
+        }
+        if (reason === "invalid_client" || reason === "missing_client_id") {
+          finish(
+            new Error("Google Sign-In is not configured correctly."),
+            undefined,
+            true
+          );
+          return;
+        }
+        if (reason === "secure_http_required") {
+          finish(
+            new Error("Google sign-in requires a secure (HTTPS) connection."),
+            undefined,
+            true
+          );
+          return;
+        }
+        if (reason === "browser_not_supported") {
+          finish(
+            new Error("Google sign-in is not supported in this browser."),
+            undefined,
+            true
+          );
+          return;
+        }
+        finishCancelled();
       }
     });
   });

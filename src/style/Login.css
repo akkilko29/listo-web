@@ -193,35 +193,12 @@
   font-size: 13px;
 }
 
-.google-button {
+.google-button-host {
   width: 100%;
-  height: 48px;
-  border: 1px solid #dce3e3;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #0f172a;
+  min-height: 48px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.google-button:hover {
-  background: #f8fafa;
-}
-
-.google-button:disabled {
-  opacity: 0.7;
-  cursor: wait;
-}
-
-.google-icon-image {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
+  align-items: center;
 }
 
 .register-text {
