@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { mountGoogleSignInButton } from "../services/googleAuth";
+import {
+  isNewGoogleRegistration,
+  trackGoogleAdsRegistrationConversion,
+} from "../services/googleAds";
 import loginIcon from "../assets/listo_logo.png";
 import { trackCompleteRegistration } from "../services/metaPixel";
 
@@ -58,8 +62,16 @@ function Login() {
       setGoogleSubmitting(true);
 
       try {
-        await loginWithGoogle(credential);
+        const googleAuthResult = await loginWithGoogle(credential);
         trackCompleteRegistration();
+        /*
+         * LISTO Registration conversion only when
+         * POST /api/auth/google created a new account.
+         * Existing Google users who only log in are skipped.
+         */
+        if (isNewGoogleRegistration(googleAuthResult)) {
+          trackGoogleAdsRegistrationConversion();
+        }
         navigate("/");
       } catch (err) {
         setError(err.message || "Google sign-in failed. Please try again.");

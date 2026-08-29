@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import listoLogo from "../assets/listo_logo.png";
 import { verifyRegisterOtp } from "../services/authService";
+import { trackGoogleAdsRegistrationConversion } from "../services/googleAds";
 import { trackCompleteRegistration } from "../services/metaPixel";
 
 function RegisterOtp({
@@ -69,9 +70,12 @@ function RegisterOtp({
       /*
        * Registration is complete only after
        * the backend confirms OTP verification.
-       * Fire Meta CompleteRegistration once.
+       * Fire Meta CompleteRegistration and the
+       * Google Ads LISTO Registration conversion
+       * once. Do not fire on form submit or failed OTP.
        */
       trackCompleteRegistration();
+      trackGoogleAdsRegistrationConversion();
 
       /*
        * =====================================
