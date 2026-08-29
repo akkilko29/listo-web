@@ -195,13 +195,7 @@ function Footer() {
         "span",
         null,
 
-        "© " + new Date().getFullYear() + " Listo. ",
-
-        React.createElement("i", {
-          className: "fa-solid fa-heart made-bihar-heart",
-        }),
-
-        " Made in Bihar. All rights reserved.",
+        "© " + new Date().getFullYear() + " Listo. All rights reserved. ",
 
         React.createElement("i", {
           className: "fa-solid fa-lock",

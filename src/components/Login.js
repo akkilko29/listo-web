@@ -118,16 +118,29 @@ function Login() {
         })
       ),
 
-      React.createElement("h1", null, "Welcome Back"),
+      React.createElement("h1", null, "Welcome to LISTO"),
 
       React.createElement(
         "p",
         { className: "login-subtitle" },
-        "Enter your details below to access your MarketHub account."
+        "New to LISTO? Create your account with Google. Existing email accounts can still log in with password below."
       ),
 
       error &&
         React.createElement("div", { className: "auth-error" }, error),
+
+      React.createElement("div", {
+        className: "google-button-host",
+        ref: googleButtonRef,
+      }),
+
+      React.createElement(
+        "div",
+        { className: "login-divider" },
+        React.createElement("span"),
+        React.createElement("p", null, "OR"),
+        React.createElement("span")
+      ),
 
       React.createElement(
         "form",
@@ -219,23 +232,9 @@ function Login() {
       ),
 
       React.createElement(
-        "div",
-        { className: "login-divider" },
-        React.createElement("span"),
-        React.createElement("p", null, "OR"),
-        React.createElement("span")
-      ),
-
-      React.createElement("div", {
-        className: "google-button-host",
-        ref: googleButtonRef,
-      }),
-
-      React.createElement(
         "p",
         { className: "register-text" },
-        "Don't have an account? ",
-        React.createElement(Link, { to: "/register" }, "Register")
+        "New to LISTO? Use Continue with Google to create your account. Email registration is not available."
       )
     )
   );

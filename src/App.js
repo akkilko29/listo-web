@@ -2,6 +2,7 @@ import React from "react";
 
 import {
   BrowserRouter,
+  Navigate,
   Routes,
   Route,
 } from "react-router-dom";
@@ -26,7 +27,8 @@ import InfoPage from "./pages/InfoPage";
 import Sitemap from "./pages/Sitemap";
 
 import Login from "./components/Login";
-import Register from "./components/Register";
+// Email/password registration is disabled. New users sign up with Google on /login.
+// import Register from "./components/Register";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 
@@ -39,7 +41,7 @@ import "./style/Header.css";
 import "./style/Footer.css";
 
 import "./style/Login.css";
-import "./style/Register.css";
+// import "./style/Register.css";
 import "./style/ForgotPassword.css";
 
 import "./style/Home.css";
@@ -178,8 +180,16 @@ function App() {
 
           React.createElement(Route, {
             path: "/register",
-            element: React.createElement(Register),
+            element: React.createElement(Navigate, {
+              to: "/login",
+              replace: true,
+            }),
           }),
+          // Email/password registration page (disabled)
+          // React.createElement(Route, {
+          //   path: "/register",
+          //   element: React.createElement(Register),
+          // }),
           React.createElement(Route, {
             path: "/forgot-password",
             element: React.createElement(ForgotPassword),

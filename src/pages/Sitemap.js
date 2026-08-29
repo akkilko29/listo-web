@@ -114,7 +114,6 @@ function Sitemap() {
           SitemapSection,
           { title: "Account" },
           React.createElement(SitemapLink, { to: "/login" }, "Login"),
-          React.createElement(SitemapLink, { to: "/register" }, "Register"),
           React.createElement(SitemapLink, { to: "/forgot-password" }, "Forgot password"),
           React.createElement(SitemapLink, { to: "/profile" }, "My profile"),
           React.createElement(SitemapLink, { to: "/my-listings" }, "My listings"),
