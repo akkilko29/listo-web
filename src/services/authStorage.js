@@ -56,3 +56,47 @@ export function clearSession() {
   window.localStorage.removeItem(USER_STORAGE_KEY);
   clearTokenCookie();
 }
+
+function clearAllCookies() {
+  if (typeof document === "undefined" || !document.cookie) {
+    return;
+  }
+
+  const hostname = window.location.hostname;
+  const domainParts = hostname.split(".");
+  const domains = ["", hostname];
+
+  if (domainParts.length > 1) {
+    domains.push(`.${hostname}`);
+    domains.push(`.${domainParts.slice(-2).join(".")}`);
+  }
+
+  document.cookie.split(";").forEach((cookie) => {
+    const name = cookie.split("=")[0].trim();
+    if (!name) {
+      return;
+    }
+
+    domains.forEach((domain) => {
+      const domainPart = domain ? `; domain=${domain}` : "";
+      document.cookie = `${name}=; path=/${domainPart}; max-age=0; SameSite=Lax`;
+      document.cookie = `${name}=; path=/${domainPart}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    });
+  });
+}
+
+export function clearAllClientData() {
+  try {
+    window.localStorage.clear();
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    window.sessionStorage.clear();
+  } catch {
+    /* ignore */
+  }
+
+  clearAllCookies();
+}

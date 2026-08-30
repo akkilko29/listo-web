@@ -173,6 +173,16 @@
   line-height: 18px;
 }
 
+.auth-notice {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 13px;
+  line-height: 18px;
+}
+
 .login-divider {
   width: 100%;
   display: flex;

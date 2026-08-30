@@ -253,6 +253,15 @@
   color: #2563eb;
 }
 
+.profile-action-button.danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.profile-danger-card .profile-password-header h2 {
+  color: #b91c1c;
+}
+
 .profile-password-card {
   margin-top: 20px;
 }

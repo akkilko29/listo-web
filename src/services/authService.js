@@ -3,7 +3,7 @@ import {
   applyRegistrationAttribution,
   clearRegistrationAttribution,
 } from "./attributionStorage";
-import { apiGet, apiPost, apiPostForm, apiPut } from "./httpClient";
+import { apiDelete, apiGet, apiPost, apiPostForm, apiPut } from "./httpClient";
 
 export function mapUser(payload) {
   if (!payload || typeof payload !== "object") {
@@ -136,4 +136,16 @@ export function resetPasswordRequest({ token, newPassword }) {
     token,
     newPassword,
   });
+}
+
+export async function requestAccountDeletion() {
+  const data = await apiDelete(API_ENDPOINTS.usersMe);
+
+  if (data?.success === false) {
+    throw new Error(
+      data.message || "Unable to request account deletion. Please try again."
+    );
+  }
+
+  return data;
 }

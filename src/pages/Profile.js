@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { resolveMediaUrl } from "../config/apiConfig";
 import { useAuth } from "../context/AuthContext";
-import { changePassword } from "../services/authService";
+import { changePassword, requestAccountDeletion } from "../services/authService";
+import { clearAllClientData } from "../services/authStorage";
 import "../style/Profile.css";
 
 function getInitials(name) {
@@ -81,7 +82,7 @@ function field(id, label, value, onChange, options = {}) {
 
 function Profile() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, refreshUser, updateProfile, updateProfilePhoto } =
+  const { isAuthenticated, user, refreshUser, updateProfile, updateProfilePhoto, logout } =
     useAuth();
   const [profile, setProfile] = useState(user);
   const [form, setForm] = useState(() => formFromUser(user));
@@ -98,6 +99,10 @@ function Profile() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [deleteConfirming, setDeleteConfirming] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteResult, setDeleteResult] = useState(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -269,6 +274,28 @@ function Profile() {
       setPasswordError(err.message || "Unable to change password");
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteError("");
+    setDeleteResult(null);
+    setDeletingAccount(true);
+
+    try {
+      const data = await requestAccountDeletion();
+      const message =
+        data?.message ||
+        "Account deletion requested. Your account and related data will be permanently deleted after 30 days unless you log in again.";
+      clearAllClientData();
+      logout();
+      navigate("/login", {
+        replace: true,
+        state: { message },
+      });
+    } catch (err) {
+      setDeleteError(err.message || "Unable to request account deletion");
+      setDeletingAccount(false);
     }
   };
 
@@ -502,6 +529,85 @@ function Profile() {
               },
               changingPassword ? "UPDATING..." : "UPDATE PASSWORD"
             )
+          )
+        ),
+
+      !loading &&
+        React.createElement(
+          "section",
+          { className: "profile-page-card profile-password-card profile-danger-card" },
+
+          React.createElement(
+            "div",
+            { className: "profile-password-header" },
+            React.createElement("h2", null, "Delete account"),
+            React.createElement(
+              "p",
+              null,
+              "Request permanent deletion of your account and related data. Deletion is scheduled 30 days after you confirm. Logging in again during that period cancels the request."
+            )
+          ),
+
+          deleteError &&
+            React.createElement(
+              "div",
+              { className: "profile-page-error profile-inline-message" },
+              deleteError
+            ),
+
+          deleteResult &&
+            React.createElement(
+              "div",
+              { className: "profile-page-success profile-inline-message" },
+              deleteResult.message ||
+                "Account deletion requested. Your account will be permanently deleted after 30 days unless you log in again."
+            ),
+
+          React.createElement(
+            "div",
+            { className: "profile-page-actions" },
+            !deleteConfirming &&
+              !deleteResult &&
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "profile-action-button danger",
+                  onClick: () => {
+                    setDeleteError("");
+                    setDeleteConfirming(true);
+                  },
+                  disabled: deletingAccount,
+                },
+                "DELETE ACCOUNT"
+              ),
+            deleteConfirming &&
+              !deleteResult &&
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "profile-action-button danger",
+                  onClick: handleDeleteAccount,
+                  disabled: deletingAccount,
+                },
+                deletingAccount ? "REQUESTING..." : "CONFIRM DELETE"
+              ),
+            deleteConfirming &&
+              !deleteResult &&
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "profile-action-button secondary",
+                  onClick: () => {
+                    setDeleteConfirming(false);
+                    setDeleteError("");
+                  },
+                  disabled: deletingAccount,
+                },
+                "CANCEL"
+              )
           )
         )
     )

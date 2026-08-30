@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { mountGoogleSignInButton } from "../services/googleAuth";
@@ -12,12 +12,16 @@ import { trackCompleteRegistration } from "../services/metaPixel";
 
 function Login() {
   const navigate = useNavigate();
+  const routerLocation = useLocation();
   const { login, loginWithGoogle } = useAuth();
   const googleButtonRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState(
+    () => routerLocation.state?.message || ""
+  );
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
@@ -128,6 +132,9 @@ function Login() {
 
       error &&
         React.createElement("div", { className: "auth-error" }, error),
+
+      notice &&
+        React.createElement("div", { className: "auth-notice" }, notice),
 
       React.createElement("div", {
         className: "google-button-host",
